@@ -1,0 +1,11 @@
+query RadarEnabledClusters {
+  radarClusterConnection {
+    nodes {
+      lambdaConfig {
+        clusterId
+        enableAutomaticFmdUpload
+      }
+      name
+    }
+  }
+}
