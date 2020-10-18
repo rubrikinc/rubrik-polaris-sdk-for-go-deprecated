@@ -52,3 +52,23 @@ type AllEvent struct {
 		} `mapstructure:"activitySeriesConnection"`
 	} `mapstructure:"data"`
 }
+
+type AllAuditLog struct {
+	Data struct {
+		UserAuditConnection struct {
+			Edges []struct {
+				Node struct {
+					ID       string `mapstructure:"id"`
+					Message  string `mapstructure:"message"`
+					Time     string `mapstructure:"time"`
+					Severity string `mapstructure:"severity"`
+					Status   string `mapstructure:"status"`
+					Cluster  struct {
+						ID   string `mapstructure:"id"`
+						Name string `mapstructure:"name"`
+					} `mapstructure:"cluster"`
+				} `mapstructure:"node"`
+			} `mapstructure:"edges"`
+		} `mapstructure:"userAuditConnection"`
+	} `mapstructure:"data"`
+}

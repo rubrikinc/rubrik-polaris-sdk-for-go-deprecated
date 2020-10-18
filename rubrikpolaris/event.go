@@ -1,6 +1,10 @@
 package rubrikpolaris
 
-import "time"
+import (
+	"time"
+
+	"github.com/mitchellh/mapstructure"
+)
 
 func (c *Credentials) GetAllEvents(secondsTimeRange int, timeout ...int) (interface{}, error) {
 
@@ -22,13 +26,13 @@ func (c *Credentials) GetAllEvents(secondsTimeRange int, timeout ...int) (interf
 
 }
 
-func (c *Credentials) GetAllAuditLogByMinute(minuteTimeRange int, timeout ...int) (interface{}, error) {
+func (c *Credentials) GetAllAuditLogByMinute(minuteTimeRange int, timeout ...int) (*AllAuditLog, error) {
 
 	httpTimeout := httpTimeout(timeout)
 
 	query, err := c.readQueryFile("AllAuditLogPerTimePeriod.graphql")
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	variables := map[string]interface{}{}
@@ -36,8 +40,15 @@ func (c *Credentials) GetAllAuditLogByMinute(minuteTimeRange int, timeout ...int
 
 	eventLog, err := c.QueryWithVariables(query, variables, httpTimeout)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return eventLog, nil
+
+	// Convert the API Response (map[string]interface{}) to a struct
+	var apiResponse AllAuditLog
+	mapErr := mapstructure.Decode(eventLog, &apiResponse)
+	if mapErr != nil {
+		return nil, mapErr
+	}
+	return &apiResponse, nil
 
 }
