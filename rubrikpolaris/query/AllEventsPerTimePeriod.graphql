@@ -1,0 +1,44 @@
+query EventSeriesListQuery($timeAgo: DateTime, limit: 5) {
+  activitySeriesConnection(filters: {lastUpdated_gt: $timeAgo},) {
+    edges {
+      node {
+        id
+        fid
+        activitySeriesId
+        lastUpdated
+        lastActivityType
+        lastActivityStatus
+        objectId
+        objectName
+        objectType
+        severity
+        progress
+        isCancelable
+        isPolarisEventSeries
+        cluster {
+          id
+          name
+          
+        }
+        activityConnection(first: 1) {
+          nodes {
+            id
+            message
+            
+          }
+          
+        }
+        
+      }
+      
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
+      hasPreviousPage
+      
+    }
+    
+  }
+}
+
