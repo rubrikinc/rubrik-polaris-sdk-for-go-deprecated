@@ -18,7 +18,7 @@ func (c *Credentials) GetAllEvents(secondsTimeRange int, timeout ...int) (interf
 	if err != nil {
 		return 0, err
 	}
-	return revents, nil
+	return events, nil
 
 }
 
