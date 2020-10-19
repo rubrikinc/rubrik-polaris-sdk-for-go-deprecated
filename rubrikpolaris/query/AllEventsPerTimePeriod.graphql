@@ -1,4 +1,4 @@
-query EventSeriesListQuery($timeAgo: DateTime, limit: 5) {
+query EventSeriesListQuery($timeAgo: DateTime) {
   activitySeriesConnection(filters: {lastUpdated_gt: $timeAgo},) {
     edges {
       node {

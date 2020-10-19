@@ -6,13 +6,13 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-func (c *Credentials) GetAllEvents(secondsTimeRange int, timeout ...int) (interface{}, error) {
+func (c *Credentials) GetAllEvents(secondsTimeRange int, timeout ...int) (*AllEvents, error) {
 
 	httpTimeout := httpTimeout(timeout)
 
 	query, err := c.readQueryFile("AllEventsPerTimePeriod.graphql")
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	variables := map[string]interface{}{}
@@ -20,9 +20,16 @@ func (c *Credentials) GetAllEvents(secondsTimeRange int, timeout ...int) (interf
 
 	events, err := c.QueryWithVariables(query, variables, httpTimeout)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return events, nil
+
+	// Convert the API Response (map[string]interface{}) to a struct
+	var apiResponse AllEvents
+	mapErr := mapstructure.Decode(events, &apiResponse)
+	if mapErr != nil {
+		return nil, mapErr
+	}
+	return &apiResponse, nil
 
 }
 

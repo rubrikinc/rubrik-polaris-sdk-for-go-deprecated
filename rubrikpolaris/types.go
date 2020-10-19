@@ -1,7 +1,5 @@
 package rubrikpolaris
 
-import "time"
-
 type RadarEnabledClusters struct {
 	Data struct {
 		RadarClusterConnection struct {
@@ -22,7 +20,7 @@ type AllEvent struct {
 					ID                   int         `mapstructure:"id"`
 					Fid                  string      `mapstructure:"fid"`
 					ActivitySeriesID     string      `mapstructure:"activitySeriesId"`
-					LastUpdated          time.Time   `mapstructure:"lastUpdated"`
+					LastUpdated          string      `mapstructure:"lastUpdated"`
 					LastActivityType     string      `mapstructure:"lastActivityType"`
 					LastActivityStatus   string      `mapstructure:"lastActivityStatus"`
 					ObjectID             string      `mapstructure:"objectId"`
@@ -70,5 +68,51 @@ type AllAuditLog struct {
 				} `mapstructure:"node"`
 			} `mapstructure:"edges"`
 		} `mapstructure:"userAuditConnection"`
+	} `mapstructure:"data"`
+}
+
+type AllEvents struct {
+	Data struct {
+		ActivitySeriesConnection struct {
+			Edges []struct {
+				Node struct {
+					ID                   int         `mapstructure:"id"`
+					Fid                  string      `mapstructure:"fid"`
+					ActivitySeriesID     string      `mapstructure:"activitySeriesId"`
+					LastUpdated          string      `mapstructure:"lastUpdated"`
+					LastActivityType     string      `mapstructure:"lastActivityType"`
+					LastActivityStatus   string      `mapstructure:"lastActivityStatus"`
+					ObjectID             string      `mapstructure:"objectId"`
+					ObjectName           string      `mapstructure:"objectName"`
+					ObjectType           string      `mapstructure:"objectType"`
+					Severity             string      `mapstructure:"severity"`
+					Progress             string      `mapstructure:"progress"`
+					IsCancelable         interface{} `mapstructure:"isCancelable"`
+					IsPolarisEventSeries bool        `mapstructure:"isPolarisEventSeries"`
+					Typename             string      `mapstructure:"__typename"`
+					Cluster              struct {
+						ID       string `mapstructure:"id"`
+						Name     string `mapstructure:"name"`
+						Typename string `mapstructure:"__typename"`
+					} `mapstructure:"cluster"`
+					ActivityConnection struct {
+						Nodes []struct {
+							ID       string `mapstructure:"id"`
+							Message  string `mapstructure:"message"`
+							Typename string `mapstructure:"__typename"`
+						} `mapstructure:"nodes"`
+						Typename string `mapstructure:"__typename"`
+					} `mapstructure:"activityConnection"`
+				} `mapstructure:"node"`
+				Typename string `mapstructure:"__typename"`
+			} `mapstructure:"edges"`
+			PageInfo struct {
+				EndCursor       string `mapstructure:"endCursor"`
+				HasNextPage     bool   `mapstructure:"hasNextPage"`
+				HasPreviousPage bool   `mapstructure:"hasPreviousPage"`
+				Typename        string `mapstructure:"__typename"`
+			} `mapstructure:"pageInfo"`
+			Typename string `mapstructure:"__typename"`
+		} `mapstructure:"activitySeriesConnection"`
 	} `mapstructure:"data"`
 }
