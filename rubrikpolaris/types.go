@@ -116,3 +116,46 @@ type AllEvents struct {
 		} `mapstructure:"activitySeriesConnection"`
 	} `mapstructure:"data"`
 }
+
+type EventSeriesDetail struct {
+	Data struct {
+		ActivitySeries struct {
+			ActivityConnection struct {
+				Nodes []struct {
+					Message  string `mapstructure:"message"`
+					Status   string `mapstructure:"status"`
+					Time     string `mapstructure:"time"`
+					Severity string `mapstructure:"severity"`
+				} `mapstructure:"nodes"`
+			} `mapstructure:"activityConnection"`
+			ID               int    `mapstructure:"id"`
+			Fid              string `mapstructure:"fid"`
+			ActivitySeriesID string `mapstructure:"activitySeriesId"`
+			ObjectID         string `mapstructure:"objectId"`
+			ObjectName       string `mapstructure:"objectName"`
+			ObjectType       string `mapstructure:"objectType"`
+			Cluster          struct {
+				ID   string `mapstructure:"id"`
+				Name string `mapstructure:"name"`
+			} `mapstructure:"cluster"`
+			LastActivityStatus string `mapstructure:"lastActivityStatus"`
+		} `mapstructure:"activitySeries"`
+	} `mapstructure:"data"`
+}
+
+type EventSeriesDetailMessage struct {
+	Message          string `json:"message"`
+	Status           string `json:"status"`
+	Time             string `json:"time"`
+	Severity         string `json:"severity"`
+	ID               int    `json:"id"`
+	Fid              string `json:"fid"`
+	ActivitySeriesID string `json:"activitySeriesId"`
+	ObjectID         string `json:"objectId"`
+	ObjectName       string `json:"objectName"`
+	ObjectType       string `json:"objectType"`
+	Cluster          struct {
+		ID   string `json:"id"`
+		Name string `json:"name"`
+	} `json:"cluster"`
+}

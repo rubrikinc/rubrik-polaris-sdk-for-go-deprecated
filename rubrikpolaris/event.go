@@ -59,3 +59,31 @@ func (c *Credentials) GetAllAuditLogByMinute(minuteTimeRange int, timeout ...int
 	return &apiResponse, nil
 
 }
+
+func (c *Credentials) GetEventDetails(activitySeriesID, clusterUUID string, timeout ...int) (*EventSeriesDetail, error) {
+
+	httpTimeout := httpTimeout(timeout)
+
+	query, err := c.readQueryFile("AllEventDetails.graphql")
+	if err != nil {
+		return nil, err
+	}
+
+	variables := map[string]interface{}{}
+	variables["activitySeriesId"] = activitySeriesID
+	variables["clusterUuid"] = clusterUUID
+
+	eventDetail, err := c.QueryWithVariables(query, variables, httpTimeout)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert the API Response (map[string]interface{}) to a struct
+	var apiResponse EventSeriesDetail
+	mapErr := mapstructure.Decode(eventDetail, &apiResponse)
+	if mapErr != nil {
+		return nil, mapErr
+	}
+	return &apiResponse, nil
+
+}

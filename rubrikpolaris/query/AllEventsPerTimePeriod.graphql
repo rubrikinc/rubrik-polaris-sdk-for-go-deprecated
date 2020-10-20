@@ -1,5 +1,5 @@
 query EventSeriesListQuery($timeAgo: DateTime) {
-  activitySeriesConnection(filters: {lastUpdated_gt: $timeAgo},) {
+  activitySeriesConnection(filters: {lastUpdated_gt: $timeAgo}) {
     edges {
       node {
         id
