@@ -103,3 +103,32 @@ func (c *Credentials) GetRadarEnabledClusters(timeout ...int) (map[string]string
 	return enabledClusters, nil
 
 }
+
+// GetRadarEnabledClusters returns the name of each Rubrik cluster with Radar enabled map to its ID value.
+func (c *Credentials) GetRadarEvents(timeAgo string, timeout ...int) (*RadarEvent, error) {
+
+	httpTimeout := httpTimeout(timeout)
+
+	queryString, err := c.readQueryFile("RadarEventsPerTimePeriod.graphql")
+	if err != nil {
+		return nil, err
+	}
+	variables := map[string]interface{}{}
+	variables["timeAgo"] = timeAgo
+
+	radarEvents, err := c.QueryWithVariables(queryString, variables, httpTimeout)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert the API Response (map[string]interface{}) to a struct
+	var apiResponse RadarEvent
+	mapErr := mapstructure.Decode(radarEvents, &apiResponse)
+	if mapErr != nil {
+		return nil, mapErr
+	}
+
+
+	return &apiResponse, nil
+
+}

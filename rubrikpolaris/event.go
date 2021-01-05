@@ -64,7 +64,7 @@ func (c *Credentials) GetEventDetails(activitySeriesID, clusterUUID string, time
 
 	httpTimeout := httpTimeout(timeout)
 
-	query, err := c.readQueryFile("AllEventDetails.graphql")
+	query, err := c.readQueryFile("EventDetails.graphql")
 	if err != nil {
 		return nil, err
 	}

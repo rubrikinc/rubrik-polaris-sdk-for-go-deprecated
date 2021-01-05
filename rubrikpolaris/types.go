@@ -144,18 +144,51 @@ type EventSeriesDetail struct {
 }
 
 type EventSeriesDetailMessage struct {
-	Message          string `json:"message"`
-	Status           string `json:"status"`
-	Time             string `json:"time"`
-	Severity         string `json:"severity"`
-	ID               int    `json:"id"`
-	Fid              string `json:"fid"`
-	ActivitySeriesID string `json:"activitySeriesId"`
-	ObjectID         string `json:"objectId"`
-	ObjectName       string `json:"objectName"`
-	ObjectType       string `json:"objectType"`
+	Message          string `mapstructure:"message"`
+	Status           string `mapstructure:"status"`
+	Time             string `mapstructure:"time"`
+	Severity         string `mapstructure:"severity"`
+	ID               int    `mapstructure:"id"`
+	Fid              string `mapstructure:"fid"`
+	ActivitySeriesID string `mapstructure:"activitySeriesId"`
+	ObjectID         string `mapstructure:"objectId"`
+	ObjectName       string `mapstructure:"objectName"`
+	ObjectType       string `mapstructure:"objectType"`
 	Cluster          struct {
-		ID   string `json:"id"`
-		Name string `json:"name"`
-	} `json:"cluster"`
+		ID   string `mapstructure:"id"`
+		Name string `mapstructure:"name"`
+	} `mapstructure:"cluster"`
+}
+
+type RadarEvent struct {
+	Data struct {
+		ActivitySeriesConnection struct {
+			Edges []struct {
+				Node struct {
+					ID                 int       `mapstructure:"id"`
+					Fid                string    `mapstructure:"fid"`
+					ActivitySeriesID   string    `mapstructure:"activitySeriesId"`
+					LastUpdated        string `mapstructure:"lastUpdated"`
+					LastActivityType   string    `mapstructure:"lastActivityType"`
+					LastActivityStatus string    `mapstructure:"lastActivityStatus"`
+					ObjectID           string    `mapstructure:"objectId"`
+					ObjectName         string    `mapstructure:"objectName"`
+					ObjectType         string    `mapstructure:"objectType"`
+					Severity           string    `mapstructure:"severity"`
+					Progress           string    `mapstructure:"progress"`
+					Cluster            struct {
+						ID   string `mapstructure:"id"`
+						Name string `mapstructure:"name"`
+					} `mapstructure:"cluster"`
+					ActivityConnection struct {
+						Nodes []struct {
+							ID      string    `mapstructure:"id"`
+							Message string    `mapstructure:"message"`
+							Time    string `mapstructure:"time"`
+						} `mapstructure:"nodes"`
+					} `mapstructure:"activityConnection"`
+				} `mapstructure:"node"`
+			} `mapstructure:"edges"`
+		} `mapstructure:"activitySeriesConnection"`
+	} `mapstructure:"data"`
 }

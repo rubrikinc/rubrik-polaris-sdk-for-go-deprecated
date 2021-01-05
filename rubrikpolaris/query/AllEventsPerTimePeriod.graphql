@@ -1,5 +1,5 @@
-query EventSeriesListQuery($timeAgo: DateTime) {
-  activitySeriesConnection(filters: {lastUpdated_gt: $timeAgo}) {
+query EventSeriesListQuery {
+  activitySeriesConnection(filters: {lastUpdated_gt: "2020-03-20T20:03:08.571Z"}) {
     edges {
       node {
         id
@@ -18,27 +18,19 @@ query EventSeriesListQuery($timeAgo: DateTime) {
         cluster {
           id
           name
-          
         }
         activityConnection(first: 1) {
           nodes {
             id
             message
-            
           }
-          
         }
-        
       }
-      
     }
     pageInfo {
       endCursor
       hasNextPage
       hasPreviousPage
-      
     }
-    
   }
 }
-

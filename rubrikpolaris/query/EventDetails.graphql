@@ -1,0 +1,23 @@
+query EventSeriesDetailsQuery($activitySeriesId: UUID!, $clusterUuid: UUID!) {
+	activitySeries(activitySeriesId: $activitySeriesId, clusterUuid: $clusterUuid) {
+		activityConnection {
+			nodes {
+				message
+				status
+				time
+				severity
+			}
+		}
+		id
+		fid
+		activitySeriesId
+		objectId
+		objectName
+		objectType
+		cluster {
+			id
+			name
+		}
+		lastActivityStatus
+	}
+}
