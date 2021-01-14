@@ -1,6 +1,7 @@
 package rubrikpolaris
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/mitchellh/mapstructure"
@@ -87,3 +88,101 @@ func (c *Credentials) GetEventDetails(activitySeriesID, clusterUUID string, time
 	return &apiResponse, nil
 
 }
+
+func (c *Credentials) GetAllPolarisEvents(timeAgo string, timeout ...int) (*PolarisEvents, error) {
+
+	httpTimeout := httpTimeout(timeout)
+
+	if httpTimeout == 15 {
+		httpTimeout = 300
+	}
+
+	query, err := c.readQueryFile("AllPolarisEventPerTimePeriod.graphql")
+	if err != nil {
+		return nil, err
+	}
+
+	variables := map[string]interface{}{}
+	variables["timeAgo"] = timeAgo
+
+	eventDetail, err := c.QueryWithVariables(query, variables, httpTimeout)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert the API Response (map[string]interface{}) to a struct
+	var apiResponse PolarisEvents
+	mapErr := mapstructure.Decode(eventDetail, &apiResponse)
+	if mapErr != nil {
+		return nil, mapErr
+	}
+
+	
+
+	var additionalData []PolarisEventsEdge
+	if apiResponse.Data.ActivitySeriesConnection.PageInfo.HasNextPage == true {
+
+		for {
+			
+			eventDetailPagination, err := c.QueryWithVariables(query, variables, httpTimeout)
+			if err != nil {
+				return nil, err
+			}
+	
+			// Convert the API Response (map[string]interface{}) to a struct
+			var apiResponsePagination PolarisEvents
+			mapErr := mapstructure.Decode(eventDetailPagination, &apiResponsePagination)
+			if mapErr != nil {
+				return nil, mapErr
+			}
+			for _, data := range  apiResponsePagination.Data.ActivitySeriesConnection.Edges {
+				fmt.Println(data.Node.ID)
+				additionalData = append(additionalData, data)
+
+			}
+
+
+			if apiResponsePagination.Data.ActivitySeriesConnection.PageInfo.HasNextPage == false {
+				
+				break
+			}
+
+			variables["after"] = apiResponsePagination.Data.ActivitySeriesConnection.PageInfo.EndCursor
+
+
+		}
+
+
+	for _, data := range additionalData{
+		apiResponse.Data.ActivitySeriesConnection.Edges = append(apiResponse.Data.ActivitySeriesConnection.Edges, data)
+	}
+
+	// fmt.Println(additionalData)
+		
+
+	}
+	return &apiResponse, nil
+
+}
+
+
+	// if strings.Contains(query, "pageInfo") {
+
+	// 	// queryFieldName represents the "top level" GraphQl field name for the query
+	// 	queryFieldName := strings.TrimSpace(strings.Split(strings.Split(query, "\n")[1], "(")[0])
+
+		
+	// 	for {
+	// 		hasNextPage := apiRequest.(map[string]interface{})["data"].(map[string]interface{})["queryFieldName"].(map[string]interface{})["pageInfo"].(map[string]interface{})["hasNextPage"]
+	// 		if hasNextPage == false{
+	// 			break
+	// 		}
+
+	// 		apiRequest, err = c.commonAPI("graphql", config, httpTimeout)
+	// 		if err != nil {
+	// 			return nil, err
+	// 		}
+	// 	}
+
+	// }
+	
