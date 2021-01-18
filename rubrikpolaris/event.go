@@ -122,7 +122,11 @@ func (c *Credentials) GetAllPolarisEvents(timeAgo string, timeout ...int) (*Pola
 	var additionalData []PolarisEventsEdge
 	if apiResponse.Data.ActivitySeriesConnection.PageInfo.HasNextPage == true {
 
+		variables["after"] = apiResponse.Data.ActivitySeriesConnection.PageInfo.EndCursor
+
+
 		for {
+
 			
 			eventDetailPagination, err := c.QueryWithVariables(query, variables, httpTimeout)
 			if err != nil {
@@ -141,9 +145,7 @@ func (c *Credentials) GetAllPolarisEvents(timeAgo string, timeout ...int) (*Pola
 
 			}
 
-
 			if apiResponsePagination.Data.ActivitySeriesConnection.PageInfo.HasNextPage == false {
-				
 				break
 			}
 
