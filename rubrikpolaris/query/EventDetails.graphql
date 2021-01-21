@@ -1,4 +1,4 @@
-query EventSeriesDetailsQuery($activitySeriesId: UUID!, $clusterUuid: UUID!) {
+query RbkLogEventSeriesDetailsQuery($activitySeriesId: UUID!, $clusterUuid: UUID!) {
 	activitySeries(activitySeriesId: $activitySeriesId, clusterUuid: $clusterUuid) {
 		activityConnection {
 			nodes {

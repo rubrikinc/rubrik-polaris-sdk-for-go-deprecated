@@ -1,11 +1,11 @@
-query RadarEnabledClusters {
-  radarClusterConnection {
-    nodes {
-      lambdaConfig {
-        clusterId
-        enableAutomaticFmdUpload
-      }
-      name
-    }
-  }
+query RbkLogRadarEnabledClusters {
+	radarClusterConnection {
+		nodes {
+			lambdaConfig {
+				clusterId
+				enableAutomaticFmdUpload
+			}
+			name
+		}
+	}
 }

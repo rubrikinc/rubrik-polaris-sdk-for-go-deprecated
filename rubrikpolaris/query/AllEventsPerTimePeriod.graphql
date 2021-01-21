@@ -1,36 +1,36 @@
-query EventSeriesListQuery {
-  activitySeriesConnection(filters: {lastUpdated_gt: "2020-03-20T20:03:08.571Z"}) {
-    edges {
-      node {
-        id
-        fid
-        activitySeriesId
-        lastUpdated
-        lastActivityType
-        lastActivityStatus
-        objectId
-        objectName
-        objectType
-        severity
-        progress
-        isCancelable
-        isPolarisEventSeries
-        cluster {
-          id
-          name
-        }
-        activityConnection(first: 1) {
-          nodes {
-            id
-            message
-          }
-        }
-      }
-    }
-    pageInfo {
-      endCursor
-      hasNextPage
-      hasPreviousPage
-    }
-  }
+query RbkLogEventSeriesListQuery($timeAgo: DateTime) {
+	activitySeriesConnection(filters: { lastUpdated_gt: $timeAgo }) {
+		edges {
+			node {
+				id
+				fid
+				activitySeriesId
+				lastUpdated
+				lastActivityType
+				lastActivityStatus
+				objectId
+				objectName
+				objectType
+				severity
+				progress
+				isCancelable
+				isPolarisEventSeries
+				cluster {
+					id
+					name
+				}
+				activityConnection(first: 1) {
+					nodes {
+						id
+						message
+					}
+				}
+			}
+		}
+		pageInfo {
+			endCursor
+			hasNextPage
+			hasPreviousPage
+		}
+	}
 }

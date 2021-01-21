@@ -1,22 +1,17 @@
-query AuditLogListQuery($timeAgo: DateTime,) {
-  userAuditConnection(filters: {time_gt: $timeAgo}) {
-    edges {
-      node {
-        id
-        message
-        time
-        severity
-        status
-        cluster {
-          id
-          name
-
-        }
-        
-      }
-      
-    }
-  
-    
-  }
+query RbkLogAuditLogListQuery($timeAgo: DateTime) {
+	userAuditConnection(filters: { time_gt: $timeAgo }) {
+		edges {
+			node {
+				id
+				message
+				time
+				severity
+				status
+				cluster {
+					id
+					name
+				}
+			}
+		}
+	}
 }
