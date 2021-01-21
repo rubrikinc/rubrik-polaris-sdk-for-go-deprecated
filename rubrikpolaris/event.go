@@ -1,7 +1,6 @@
 package rubrikpolaris
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/mitchellh/mapstructure"
@@ -117,17 +116,14 @@ func (c *Credentials) GetAllPolarisEvents(timeAgo string, timeout ...int) (*Pola
 		return nil, mapErr
 	}
 
-	
 
 	var additionalData []PolarisEventsEdge
 	if apiResponse.Data.ActivitySeriesConnection.PageInfo.HasNextPage == true {
 
 		variables["after"] = apiResponse.Data.ActivitySeriesConnection.PageInfo.EndCursor
 
-
 		for {
 
-			
 			eventDetailPagination, err := c.QueryWithVariables(query, variables, httpTimeout)
 			if err != nil {
 				return nil, err
@@ -139,10 +135,9 @@ func (c *Credentials) GetAllPolarisEvents(timeAgo string, timeout ...int) (*Pola
 			if mapErr != nil {
 				return nil, mapErr
 			}
+			
 			for _, data := range  apiResponsePagination.Data.ActivitySeriesConnection.Edges {
-				fmt.Println(data.Node.ID)
 				additionalData = append(additionalData, data)
-
 			}
 
 			if apiResponsePagination.Data.ActivitySeriesConnection.PageInfo.HasNextPage == false {
@@ -151,40 +146,15 @@ func (c *Credentials) GetAllPolarisEvents(timeAgo string, timeout ...int) (*Pola
 
 			variables["after"] = apiResponsePagination.Data.ActivitySeriesConnection.PageInfo.EndCursor
 
-
 		}
 
-
-	for _, data := range additionalData{
-		apiResponse.Data.ActivitySeriesConnection.Edges = append(apiResponse.Data.ActivitySeriesConnection.Edges, data)
-	}
-
-	// fmt.Println(additionalData)
+		for _, data := range additionalData{
+			apiResponse.Data.ActivitySeriesConnection.Edges = append(apiResponse.Data.ActivitySeriesConnection.Edges, data)
+		}
 		
-
 	}
 	return &apiResponse, nil
 
 }
 
-
-	// if strings.Contains(query, "pageInfo") {
-
-	// 	// queryFieldName represents the "top level" GraphQl field name for the query
-	// 	queryFieldName := strings.TrimSpace(strings.Split(strings.Split(query, "\n")[1], "(")[0])
-
-		
-	// 	for {
-	// 		hasNextPage := apiRequest.(map[string]interface{})["data"].(map[string]interface{})["queryFieldName"].(map[string]interface{})["pageInfo"].(map[string]interface{})["hasNextPage"]
-	// 		if hasNextPage == false{
-	// 			break
-	// 		}
-
-	// 		apiRequest, err = c.commonAPI("graphql", config, httpTimeout)
-	// 		if err != nil {
-	// 			return nil, err
-	// 		}
-	// 	}
-
-	// }
 	
