@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/gobuffalo/packr/v2 v2.8.0
 	github.com/karrick/godirwalk v1.16.1 // indirect
+	github.com/markbates/pkger v0.17.1
 	github.com/mitchellh/mapstructure v1.3.3
 	github.com/rogpeppe/go-internal v1.6.2 // indirect
 	github.com/sirupsen/logrus v1.7.0 // indirect
