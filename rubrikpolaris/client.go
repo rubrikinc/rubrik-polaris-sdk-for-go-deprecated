@@ -61,7 +61,8 @@ type apiToken struct {
 
 // Connect initializes a new API client based on manually provided Rubrik cluster credentials. When possible,
 // the Rubrik credentials should not be stored as plain text in your .go file. ConnectEnv() can be used
-// as a safer alternative.
+// as a safer alternative. The operationName is an optional value which can be used to add a custom prefix 
+// to the GraphQL Operation Name which is useful for tracking specific usage in the Polaris logs.
 func Connect(nodeIP, username, password string, operationName ...string) *Credentials {
 
 	operationNamePrefiex := "SdkGoLang"
@@ -83,8 +84,6 @@ func Connect(nodeIP, username, password string, operationName ...string) *Creden
 // following environment variables:
 //
 //  rubrik_polaris_domain
-//
-//  rubrik_cdm_token
 //
 //  rubrik_polaris_username
 //
