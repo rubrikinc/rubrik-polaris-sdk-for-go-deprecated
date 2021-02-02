@@ -30,7 +30,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/gobuffalo/packr/v2"
+	"github.com/rubrikinc/rubrik-polaris-sdk-for-go/staticfile"
 )
 
 // Type and Constants are used for escaping Get requests
@@ -276,18 +276,11 @@ func (c *Credentials) generateAPIToken(timeout ...int) (string, error) {
 
 }
 
-func (c *Credentials) readQueryFile(filePath string, timeout ...int) (string, error) {
+func (c *Credentials) readQueryFile(filePath string, timeout ...int) (string) {
 
 	// set up a new box by giving it a name and an optional (relative) path to a folder on disk:
-	box := packr.New("Static GQL Files", "./query")
-
-	// Get the string representation of a file, or an error if it doesn't exist:
-	file, err := box.FindString(filePath)
-	if err != nil {
-		return "", err
-	}
-
-	return file, nil
+	file := string(staticfile.Get(fmt.Sprintf("query/%s", filePath)))
+	return file
 
 }
 

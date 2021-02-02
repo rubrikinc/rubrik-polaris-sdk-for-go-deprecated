@@ -10,11 +10,8 @@ func (c *Credentials) GetAllEvents(secondsTimeRange int, timeout ...int) (*AllEv
 
 	httpTimeout := httpTimeout(timeout)
 
-	query, err := c.readQueryFile("AllEventsPerTimePeriod.graphql")
-	if err != nil {
-		return nil, err
-	}
-
+	query := c.readQueryFile("AllEventsPerTimePeriod.graphql")
+	
 	variables := map[string]interface{}{}
 	variables["timeAgo"] = time.Now().Add(time.Duration(secondsTimeRange*-1) * time.Second).UTC().Format(time.RFC3339)
 
@@ -37,10 +34,8 @@ func (c *Credentials) GetAllAuditLogByMinute(minuteTimeRange int, timeout ...int
 
 	httpTimeout := httpTimeout(timeout)
 
-	query, err := c.readQueryFile("AllAuditLogPerTimePeriod.graphql")
-	if err != nil {
-		return nil, err
-	}
+	query := c.readQueryFile("AllAuditLogPerTimePeriod.graphql")
+	
 
 	variables := map[string]interface{}{}
 	variables["timeAgo"] = time.Now().Add(time.Duration(minuteTimeRange*-1) * time.Minute).UTC().Format(time.RFC3339)
@@ -64,35 +59,8 @@ func (c *Credentials) GetEventDetails(activitySeriesID, clusterUUID string, time
 
 	httpTimeout := httpTimeout(timeout)
 
-	// query, err := c.readQueryFile("EventDetails.graphql")
-	// if err != nil {
-	// 	return nil, err
-	// }
+	query := c.readQueryFile("EventDetails.graphql")
 
-	query := `query RbkLogEventSeriesDetailsQuery($activitySeriesId: UUID!, $clusterUuid: UUID!) {
-		activitySeries(activitySeriesId: $activitySeriesId, clusterUuid: $clusterUuid) {
-			activityConnection {
-				nodes {
-					message
-					status
-					time
-					severity
-				}
-			}
-			id
-			fid
-			activitySeriesId
-			objectId
-			objectName
-			objectType
-			cluster {
-				id
-				name
-			}
-			lastActivityStatus
-		}
-	}
-	`
 
 	variables := map[string]interface{}{}
 	variables["activitySeriesId"] = activitySeriesID
@@ -121,59 +89,9 @@ func (c *Credentials) GetAllPolarisEvents(timeAgo string, timeout ...int) (*Pola
 		httpTimeout = 300
 	}
 
-	// query, err := c.readQueryFile("AllPolarisEventPerTimePeriod.graphql")
-	// if err != nil {
-	// 	return nil, err
-	// }
 
-	query := `query RbkLogAllPolarisEventsPerTimePeriod($timeAgo: DateTime, $after: String) {
-		activitySeriesConnection(
-			filters: {
-				cluster: { id: ["00000000-0000-0000-0000-000000000000"] }
-				startTime_gt: $timeAgo
-				lastUpdated_gt: $timeAgo
-			}
-			first: 20
-			after: $after
-		) {
-			edges {
-				node {
-					id
-					fid
-					activitySeriesId
-					lastUpdated
-					lastActivityType
-					lastActivityStatus
-					objectId
-					objectName
-					objectType
-					severity
-					progress
-					cluster {
-						id
-						name
-					}
-					cluster {
-						id
-						name
-					}
-					activityConnection {
-						nodes {
-							id
-							message
-							time
-						}
-					}
-				}
-			}
-			pageInfo {
-				endCursor
-				hasNextPage
-				hasPreviousPage
-			}
-		}
-	}
-	`
+	query := c.readQueryFile("AllPolarisEventPerTimePeriod.graphql")
+
 
 	variables := map[string]interface{}{}
 	variables["timeAgo"] = timeAgo

@@ -11,43 +11,8 @@ func (c *Credentials) GetRadarEventsLast24Hours(timeout ...int) (float64, error)
 
 	httpTimeout := httpTimeout(timeout)
 
-	// query, err := c.readQueryFile("RadarEventsPerTimePeriod.graphql")
-	// if err != nil {
-	// 	return 0, err
-	// }
-
-	query := `query RbkLogRadarEventPerTimePeriod($timeAgo: DateTime) {
-		activitySeriesConnection(filters: { lastActivityType: Anomaly, startTime_gt: $timeAgo }) {
-			edges {
-				node {
-					id
-					fid
-					activitySeriesId
-					lastUpdated
-					lastActivityType
-					lastActivityStatus
-					objectId
-					objectName
-					objectType
-					severity
-					progress
-					cluster {
-						id
-						name
-					}
-					activityConnection {
-						nodes {
-							id
-							message
-							time
-						}
-					}
-				}
-			}
-		}
-	}
-	`
-
+	query := c.readQueryFile("RadarEventsPerTimePeriod.graphql")
+	
 	variables := map[string]interface{}{}
 	variables["timeAgo"] = time.Now().Add(-24 * time.Hour).UTC().Format(time.RFC3339)
 
@@ -64,10 +29,7 @@ func (c *Credentials) GetRadarEventsLast30Days(timeout ...int) (float64, error) 
 
 	httpTimeout := httpTimeout(timeout)
 
-	query, err := c.readQueryFile("RadarEventsPerTimePeriod.graphql")
-	if err != nil {
-		return 0, err
-	}
+	query := c.readQueryFile("RadarEventsPerTimePeriod.graphql")
 
 	variables := map[string]interface{}{}
 	variables["timeAgo"] = time.Now().Add(-720 * time.Hour).UTC().Format(time.RFC3339)
@@ -85,10 +47,7 @@ func (c *Credentials) GetRadarEventsLastYear(timeout ...int) (float64, error) {
 
 	httpTimeout := httpTimeout(timeout)
 
-	query, err := c.readQueryFile("RadarEventsPerTimePeriod.graphql")
-	if err != nil {
-		return 0, err
-	}
+	query := c.readQueryFile("RadarEventsPerTimePeriod.graphql")
 
 	variables := map[string]interface{}{}
 	variables["timeAgo"] = time.Now().Add(-8760 * time.Hour).UTC().Format(time.RFC3339)
@@ -106,10 +65,7 @@ func (c *Credentials) GetRadarEnabledClusters(timeout ...int) (map[string]string
 
 	httpTimeout := httpTimeout(timeout)
 
-	query, err := c.readQueryFile("RadarEnabledClusters.graphql")
-	if err != nil {
-		return nil, err
-	}
+	query := c.readQueryFile("RadarEnabledClusters.graphql")
 
 	radarEnabledClustersQuery, err := c.Query(query, httpTimeout)
 	if err != nil {
@@ -141,42 +97,8 @@ func (c *Credentials) GetRadarEvents(timeAgo string, timeout ...int) (*RadarEven
 
 	httpTimeout := httpTimeout(timeout)
 
-	// queryString, err := c.readQueryFile("RadarEventsPerTimePeriod.graphql")
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	queryString := `query RbkLogRadarEventPerTimePeriod($timeAgo: DateTime) {
-		activitySeriesConnection(filters: { lastActivityType: Anomaly, startTime_gt: $timeAgo }) {
-			edges {
-				node {
-					id
-					fid
-					activitySeriesId
-					lastUpdated
-					lastActivityType
-					lastActivityStatus
-					objectId
-					objectName
-					objectType
-					severity
-					progress
-					cluster {
-						id
-						name
-					}
-					activityConnection {
-						nodes {
-							id
-							message
-							time
-						}
-					}
-				}
-			}
-		}
-	}
-	`
+	queryString := c.readQueryFile("RadarEventsPerTimePeriod.graphql")
+	
 	variables := map[string]interface{}{}
 	variables["timeAgo"] = timeAgo
 

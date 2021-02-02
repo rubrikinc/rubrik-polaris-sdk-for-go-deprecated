@@ -3,38 +3,39 @@ package main
 import (
 	"fmt"
 	"time"
-	
+
 	"github.com/rubrikinc/rubrik-polaris-sdk-for-go/rubrikpolaris"
-
 )
 
-const (
 
-	timeFormat = "2006-01-02T15:04:05.000Z"
-)
 
 
 
 func main() {
 
+	timeFormat := "2006-01-02T15:04:05.000Z"
 
 
-	
+	polaris := rubrikpolaris.Connect("rubrik-se", "polarisselogs@rubrik.com", "cmx6oleqw9oKVKY!*") // nolint
 
-	polaris := rubrikpolaris.Connect("rubrik-se", "drew.russell@outlook.com", "Welcome1!")
-	// polaris := rubrikpolaris.Connect("rubrik-se", "drew.russell@rubrik.com", "XQHBFn7D7xjTdm")
+	radarTimeOfLastCheck := time.Now().UTC().Add(time.Hour * -1)
 
+	radarEvent, _ := polaris.GetAllPolarisEvents(radarTimeOfLastCheck.Format(timeFormat))
 
-	
-
-	timeOfLastCheck := time.Now().UTC().Add(time.Minute * -120)
-
-	radarEvent, err := polaris.GetAllPolarisEvents(timeOfLastCheck.Format(timeFormat)) // nolint
-	if err != nil {
-		fmt.Println(err)
-	}
 
 	fmt.Println(radarEvent)
+
+
+	
+	
+
+
+	
+
+	
+
+
+
 
 	// go func() {
 	// 	for {
