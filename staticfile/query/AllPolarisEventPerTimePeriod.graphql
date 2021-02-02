@@ -1,4 +1,4 @@
-query RbkLogAllPolarisEventsPerTimePeriod($timeAgo: DateTime, $after: String) {
+query AllPolarisEventsPerTimePeriod($timeAgo: DateTime, $after: String) {
 	activitySeriesConnection(
 		filters: {
 			cluster: { id: ["00000000-0000-0000-0000-000000000000"] }

@@ -29,6 +29,7 @@ import (
 	"reflect"
 	"sort"
 	"time"
+	"strings"
 
 	"github.com/rubrikinc/rubrik-polaris-sdk-for-go/staticfile"
 )
@@ -48,6 +49,7 @@ type Credentials struct {
 	PolarisDomain string
 	Username      string
 	Password      string
+	OperationNamePrefix string
 }
 
 var polarisAuthentication apiToken
@@ -60,11 +62,18 @@ type apiToken struct {
 // Connect initializes a new API client based on manually provided Rubrik cluster credentials. When possible,
 // the Rubrik credentials should not be stored as plain text in your .go file. ConnectEnv() can be used
 // as a safer alternative.
-func Connect(nodeIP, username, password string, apiToken ...string) *Credentials {
+func Connect(nodeIP, username, password string, operationName ...string) *Credentials {
+
+	operationNamePrefiex := "SdkGoLang"
+	if len(operationName) > 0 {
+		operationNamePrefiex = fmt.Sprintf("%s%s", operationNamePrefiex, operationName[0]) 
+	}
+
 	client := &Credentials{
 		PolarisDomain: nodeIP,
 		Username:      username,
 		Password:      password,
+		OperationNamePrefix: operationNamePrefiex,
 	}
 
 	return client
@@ -125,13 +134,15 @@ func (c *Credentials) commonAPI(callType string, config map[string]interface{}, 
 	if callType == "graphql" {
 		requestURL = fmt.Sprintf("https://%s.my.rubrik.com/api/graphql", c.PolarisDomain)
 
+		config["operationName"] = fmt.Sprintf("%s%s", c.OperationNamePrefix, parseOperationName(config["query"].(string))) 
+
 	} else {
 		requestURL = fmt.Sprintf("https://%s.my.rubrik.com/api/session", c.PolarisDomain)
 
 	}
 
 	var request *http.Request
-
+	
 	convertedConfig, _ := json.Marshal(config)
 	request, _ = http.NewRequest("POST", requestURL, bytes.NewBuffer(convertedConfig))
 
@@ -312,4 +323,12 @@ func stringEq(a []string, b []interface{}) bool {
 	}
 
 	return true
+}
+
+func parseOperationName(query string) (string) {
+	splitQuery := strings.Split(query, "query")
+	splitOperationName := strings.Split(splitQuery[1], "(")
+	removeSpacing := strings.Replace(splitOperationName[0], " ", "", -1)
+
+	return removeSpacing
 }

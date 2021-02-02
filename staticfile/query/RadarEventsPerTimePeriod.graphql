@@ -1,4 +1,4 @@
-query RbkLogRadarEventPerTimePeriod($timeAgo: DateTime) {
+query RadarEventPerTimePeriod($timeAgo: DateTime) {
 	activitySeriesConnection(filters: { lastActivityType: Anomaly, startTime_gt: $timeAgo }) {
 		edges {
 			node {

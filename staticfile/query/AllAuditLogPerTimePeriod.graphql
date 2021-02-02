@@ -1,4 +1,4 @@
-query RbkLogAuditLogListQuery($timeAgo: DateTime) {
+query AuditLogListQuery($timeAgo: DateTime) {
 	userAuditConnection(filters: { time_gt: $timeAgo }) {
 		edges {
 			node {

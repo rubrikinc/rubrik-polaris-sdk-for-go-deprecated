@@ -1,4 +1,4 @@
-query RbkLogEventSeriesListQuery($timeAgo: DateTime) {
+query EventSeriesListQuery($timeAgo: DateTime) {
 	activitySeriesConnection(filters: { lastUpdated_gt: $timeAgo }) {
 		edges {
 			node {
