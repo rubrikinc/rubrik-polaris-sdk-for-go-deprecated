@@ -15,3 +15,5 @@
 # vendor/
 dev.go
 .DS_Store
+
+main.go
