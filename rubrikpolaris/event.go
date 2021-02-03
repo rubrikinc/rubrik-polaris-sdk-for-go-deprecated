@@ -30,7 +30,7 @@ func (c *Credentials) GetAllEvents(secondsTimeRange int, timeout ...int) (*AllEv
 
 }
 
-func (c *Credentials) GetAllAuditLogByMinute(minuteTimeRange int, timeout ...int) (*AllAuditLog, error) {
+func (c *Credentials) GetAllAuditLog(timeAgo string, timeout ...int) (*AllAuditLog, error) {
 
 	httpTimeout := httpTimeout(timeout)
 
@@ -38,7 +38,7 @@ func (c *Credentials) GetAllAuditLogByMinute(minuteTimeRange int, timeout ...int
 	
 
 	variables := map[string]interface{}{}
-	variables["timeAgo"] = time.Now().Add(time.Duration(minuteTimeRange*-1) * time.Minute).UTC().Format(time.RFC3339)
+	variables["timeAgo"] = timeAgo
 
 	eventLog, err := c.QueryWithVariables(query, variables, httpTimeout)
 	if err != nil {
