@@ -1,4 +1,4 @@
-query AuditLogListQuery($timeAgo: DateTime) {
+query AllAuditLogPerTimePeriod($timeAgo: DateTime) {
 	userAuditConnection(filters: { time_gt: $timeAgo }) {
 		edges {
 			node {

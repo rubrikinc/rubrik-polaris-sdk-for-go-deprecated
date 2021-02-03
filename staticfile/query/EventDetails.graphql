@@ -1,4 +1,4 @@
-query EventSeriesDetailsQuery($activitySeriesId: UUID!, $clusterUuid: UUID!) {
+query EventDetails($activitySeriesId: UUID!, $clusterUuid: UUID!) {
 	activitySeries(activitySeriesId: $activitySeriesId, clusterUuid: $clusterUuid) {
 		activityConnection {
 			nodes {

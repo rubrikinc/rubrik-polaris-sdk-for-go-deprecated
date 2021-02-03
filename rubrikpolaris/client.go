@@ -49,7 +49,7 @@ type Credentials struct {
 	PolarisDomain string
 	Username      string
 	Password      string
-	OperationNamePrefix string
+	OperationName string
 }
 
 var polarisAuthentication apiToken
@@ -74,7 +74,7 @@ func Connect(nodeIP, username, password string, operationName ...string) *Creden
 		PolarisDomain: nodeIP,
 		Username:      username,
 		Password:      password,
-		OperationNamePrefix: operationNamePrefiex,
+		OperationName: operationNamePrefiex,
 	}
 
 	return client
@@ -132,8 +132,14 @@ func (c *Credentials) commonAPI(callType string, config map[string]interface{}, 
 	var requestURL string
 	if callType == "graphql" {
 		requestURL = fmt.Sprintf("https://%s.my.rubrik.com/api/graphql", c.PolarisDomain)
-
-		config["operationName"] = fmt.Sprintf("%s%s", c.OperationNamePrefix, parseOperationName(config["query"].(string))) 
+		// Parse the Operation Name of the static GraphQL query
+		staticOperationName := parseOperationName(config["query"].(string))
+		// Combine the predefined Operation Name with the Operation Name defined
+		// in the static GQL query
+		config["operationName"] = fmt.Sprintf("%s%s", c.OperationName, staticOperationName)
+		// Replace the Operation Name in the static GQL query with the new custom
+		// name
+		config["query"] = strings.Replace(config["query"].(string), staticOperationName, config["operationName"].(string), 1)
 
 	} else {
 		requestURL = fmt.Sprintf("https://%s.my.rubrik.com/api/session", c.PolarisDomain)

@@ -1,4 +1,4 @@
-query RadarEventsPerTimePeriod($timeAgo: DateTime) {
+query RadarTotalEventsPerTimePeriod($timeAgo: DateTime) {
 	activitySeriesConnection(filters: { lastActivityType: Anomaly, startTime_gt: $timeAgo }) {
 		count
 	}
