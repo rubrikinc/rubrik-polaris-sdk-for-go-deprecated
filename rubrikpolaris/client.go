@@ -28,8 +28,8 @@ import (
 	"os"
 	"reflect"
 	"sort"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/rubrikinc/rubrik-polaris-sdk-for-go/staticfile"
 )
@@ -161,7 +161,6 @@ func (c *Credentials) commonAPI(callType string, config map[string]interface{}, 
 
 	request.Header.Set("Content-Type", "application/json;charset=UTF-8")
 	request.Header.Set("Accept", "application/json")
-	request.Header.Set("User-Agent", "Rubrik Polaris Go SDK v1.0.0")
 
 	apiRequest, err := client.Do(request)
 	if err, ok := err.(net.Error); ok && err.Timeout() {
@@ -169,6 +168,8 @@ func (c *Credentials) commonAPI(callType string, config map[string]interface{}, 
 	} else if err != nil {
 		return nil, err
 	}
+
+	defer apiRequest.Body.Close()
 
 	body, err := ioutil.ReadAll(apiRequest.Body)
 
