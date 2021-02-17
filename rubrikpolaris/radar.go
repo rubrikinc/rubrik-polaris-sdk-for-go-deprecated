@@ -12,7 +12,7 @@ func (c *Credentials) GetRadarEventsLast24Hours(timeout ...int) (float64, error)
 	httpTimeout := httpTimeout(timeout)
 
 	query := c.readQueryFile("RadarEventsPerTimePeriod.graphql")
-	
+
 	variables := map[string]interface{}{}
 	variables["timeAgo"] = time.Now().Add(-24 * time.Hour).UTC().Format(time.RFC3339)
 
@@ -98,7 +98,7 @@ func (c *Credentials) GetRadarEvents(timeAgo string, timeout ...int) (*RadarEven
 	httpTimeout := httpTimeout(timeout)
 
 	queryString := c.readQueryFile("RadarEventsPerTimePeriod.graphql")
-	
+
 	variables := map[string]interface{}{}
 	variables["timeAgo"] = timeAgo
 
@@ -113,7 +113,6 @@ func (c *Credentials) GetRadarEvents(timeAgo string, timeout ...int) (*RadarEven
 	if mapErr != nil {
 		return nil, mapErr
 	}
-
 
 	return &apiResponse, nil
 
@@ -125,7 +124,7 @@ func (c *Credentials) GetRadarAndSonarEvents(timeAgo string, timeout ...int) (*R
 	httpTimeout := httpTimeout(timeout)
 
 	queryString := c.readQueryFile("RadarSonarEventsPerTimePeriod.graphql")
-	
+
 	variables := map[string]interface{}{}
 	variables["timeAgo"] = timeAgo
 
@@ -141,6 +140,31 @@ func (c *Credentials) GetRadarAndSonarEvents(timeAgo string, timeout ...int) (*R
 		return nil, mapErr
 	}
 
+	return &apiResponse, nil
+
+}
+
+// GetRadarAndSonarEvents returns all Radar and Sonar events for the specified time period
+func (c *Credentials) EnableRadar(clusterId string, timeout ...int) (*EnableRadar, error) {
+
+	httpTimeout := httpTimeout(timeout)
+
+	queryString := c.readQueryFile("EnableRadar.graphql")
+
+	variables := map[string]interface{}{}
+	variables["clusterId"] = clusterId
+
+	enable, err := c.MutationWithVariables(queryString, variables, httpTimeout)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert the API Response (map[string]interface{}) to a struct
+	var apiResponse EnableRadar
+	mapErr := mapstructure.Decode(enable, &apiResponse)
+	if mapErr != nil {
+		return nil, mapErr
+	}
 
 	return &apiResponse, nil
 

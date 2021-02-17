@@ -61,13 +61,13 @@ type apiToken struct {
 
 // Connect initializes a new API client based on manually provided Rubrik cluster credentials. When possible,
 // the Rubrik credentials should not be stored as plain text in your .go file. ConnectEnv() can be used
-// as a safer alternative. The operationName is an optional value which can be used to add a custom prefix 
+// as a safer alternative. The operationName is an optional value which can be used to add a custom prefix
 // to the GraphQL Operation Name which is useful for tracking specific usage in the Polaris logs.
 func Connect(nodeIP, username, password string, operationName ...string) *Credentials {
 
 	operationNamePrefiex := "SdkGoLang"
 	if len(operationName) > 0 {
-		operationNamePrefiex = fmt.Sprintf("%s%s", operationNamePrefiex, operationName[0]) 
+		operationNamePrefiex = fmt.Sprintf("%s%s", operationNamePrefiex, operationName[0])
 	}
 
 	client := &Credentials{
@@ -131,24 +131,42 @@ func (c *Credentials) commonAPI(callType string, config map[string]interface{}, 
 
 	var requestURL string
 	if callType == "graphql" {
+
 		requestURL = fmt.Sprintf("https://%s.my.rubrik.com/api/graphql", c.PolarisDomain)
 		// Parse the Operation Name of the static GraphQL query
-		staticOperationName := parseOperationName(config["query"].(string))
+
+		var staticOperationName string
+		if config["query"] == nil {
+
+			staticOperationName = parseOperationName(config["mutation"].(string))
+		} else {
+			staticOperationName = parseOperationName(config["query"].(string))
+
+		}
+
 		// Combine the predefined Operation Name with the Operation Name defined
 		// in the static GQL query
 		config["operationName"] = fmt.Sprintf("%s%s", c.OperationName, staticOperationName)
 		// Replace the Operation Name in the static GQL query with the new custom
 		// name
-		config["query"] = strings.Replace(config["query"].(string), staticOperationName, config["operationName"].(string), 1)
+		if config["query"] == nil {
+			config["query"] = strings.Replace(config["mutation"].(string), staticOperationName, config["operationName"].(string), 1)
+		} else {
+			config["query"] = strings.Replace(config["query"].(string), staticOperationName, config["operationName"].(string), 1)
+
+		}
 
 	} else {
 		requestURL = fmt.Sprintf("https://%s.my.rubrik.com/api/session", c.PolarisDomain)
 
 	}
 
+	fmt.Println(config)
+
 	var request *http.Request
-	
+
 	convertedConfig, _ := json.Marshal(config)
+
 	request, _ = http.NewRequest("POST", requestURL, bytes.NewBuffer(convertedConfig))
 
 	if callType == "graphql" {
@@ -188,12 +206,12 @@ func (c *Credentials) commonAPI(callType string, config map[string]interface{}, 
 
 	}
 
-	//
 	if reflect.TypeOf(convertedAPIResponse).Kind() == reflect.Slice {
 		return convertedAPIResponse, nil
 	}
 
 	if _, ok := convertedAPIResponse.(map[string]interface{})["errorType"]; ok {
+
 		return nil, fmt.Errorf("%s", convertedAPIResponse.(map[string]interface{})["message"])
 	}
 
@@ -260,6 +278,27 @@ func (c *Credentials) QueryWithVariables(query string, variables map[string]inte
 
 }
 
+func (c *Credentials) MutationWithVariables(query string, variables map[string]interface{}, timeout ...int) (interface{}, error) {
+
+	httpTimeout := httpTimeout(timeout)
+
+	c.generateAPIToken(httpTimeout)
+
+	config := map[string]interface{}{}
+
+	config["mutation"] = query
+
+	config["variables"] = variables
+
+	apiRequest, err := c.commonAPI("graphql", config, httpTimeout)
+	if err != nil {
+		return nil, err
+	}
+
+	return apiRequest, nil
+
+}
+
 func (c *Credentials) generateAPIToken(timeout ...int) (string, error) {
 
 	httpTimeout := httpTimeout(timeout)
@@ -293,7 +332,7 @@ func (c *Credentials) generateAPIToken(timeout ...int) (string, error) {
 
 }
 
-func (c *Credentials) readQueryFile(filePath string, timeout ...int) (string) {
+func (c *Credentials) readQueryFile(filePath string, timeout ...int) string {
 
 	// set up a new box by giving it a name and an optional (relative) path to a folder on disk:
 	file := string(staticfile.Get(fmt.Sprintf("query/%s", filePath)))
@@ -331,10 +370,40 @@ func stringEq(a []string, b []interface{}) bool {
 	return true
 }
 
-func parseOperationName(query string) (string) {
-	splitQuery := strings.Split(query, "query")
+func parseOperationName(query string) string {
+	var splitQuery []string
+	if query == "query" {
+		splitQuery = strings.Split(query, "query")
+
+	} else {
+		splitQuery = strings.Split(query, "mutation")
+
+	}
+
+	// var splitOperationName []string
+	// if strings.Contains(splitQuery[1], "(") {
+	// 	splitOperationName = strings.Split(splitQuery[1], "(")
+
+	// } else {
+	// 	splitOperationName = strings.Split(splitQuery[1], " {")
+
+	// }
+
 	splitOperationName := strings.Split(splitQuery[1], "(")
+	splitOperationName = strings.Split(splitOperationName[0], " {")
+
 	removeSpacing := strings.Replace(splitOperationName[0], " ", "", -1)
 
 	return removeSpacing
+}
+
+// contains checks if a string is present in a slice
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+
+	return false
 }

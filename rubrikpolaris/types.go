@@ -165,25 +165,25 @@ type RadarEvent struct {
 		ActivitySeriesConnection struct {
 			Edges []struct {
 				Node struct {
-					ID                 int       `mapstructure:"id"`
-					Fid                string    `mapstructure:"fid"`
-					ActivitySeriesID   string    `mapstructure:"activitySeriesId"`
+					ID                 int    `mapstructure:"id"`
+					Fid                string `mapstructure:"fid"`
+					ActivitySeriesID   string `mapstructure:"activitySeriesId"`
 					LastUpdated        string `mapstructure:"lastUpdated"`
-					LastActivityType   string    `mapstructure:"lastActivityType"`
-					LastActivityStatus string    `mapstructure:"lastActivityStatus"`
-					ObjectID           string    `mapstructure:"objectId"`
-					ObjectName         string    `mapstructure:"objectName"`
-					ObjectType         string    `mapstructure:"objectType"`
-					Severity           string    `mapstructure:"severity"`
-					Progress           string    `mapstructure:"progress"`
+					LastActivityType   string `mapstructure:"lastActivityType"`
+					LastActivityStatus string `mapstructure:"lastActivityStatus"`
+					ObjectID           string `mapstructure:"objectId"`
+					ObjectName         string `mapstructure:"objectName"`
+					ObjectType         string `mapstructure:"objectType"`
+					Severity           string `mapstructure:"severity"`
+					Progress           string `mapstructure:"progress"`
 					Cluster            struct {
 						ID   string `mapstructure:"id"`
 						Name string `mapstructure:"name"`
 					} `mapstructure:"cluster"`
 					ActivityConnection struct {
 						Nodes []struct {
-							ID      string    `mapstructure:"id"`
-							Message string    `mapstructure:"message"`
+							ID      string `mapstructure:"id"`
+							Message string `mapstructure:"message"`
 							Time    string `mapstructure:"time"`
 						} `mapstructure:"nodes"`
 					} `mapstructure:"activityConnection"`
@@ -198,25 +198,25 @@ type PolarisEvents struct {
 		ActivitySeriesConnection struct {
 			Edges []struct {
 				Node struct {
-					ID                 int       `mapstructure:"id"`
-					Fid                string    `mapstructure:"fid"`
-					ActivitySeriesID   string    `mapstructure:"activitySeriesId"`
+					ID                 int    `mapstructure:"id"`
+					Fid                string `mapstructure:"fid"`
+					ActivitySeriesID   string `mapstructure:"activitySeriesId"`
 					LastUpdated        string `mapstructure:"lastUpdated"`
-					LastActivityType   string    `mapstructure:"lastActivityType"`
-					LastActivityStatus string    `mapstructure:"lastActivityStatus"`
-					ObjectID           string    `mapstructure:"objectId"`
-					ObjectName         string    `mapstructure:"objectName"`
-					ObjectType         string    `mapstructure:"objectType"`
-					Severity           string    `mapstructure:"severity"`
-					Progress           string    `mapstructure:"progress"`
+					LastActivityType   string `mapstructure:"lastActivityType"`
+					LastActivityStatus string `mapstructure:"lastActivityStatus"`
+					ObjectID           string `mapstructure:"objectId"`
+					ObjectName         string `mapstructure:"objectName"`
+					ObjectType         string `mapstructure:"objectType"`
+					Severity           string `mapstructure:"severity"`
+					Progress           string `mapstructure:"progress"`
 					Cluster            struct {
 						ID   string `mapstructure:"id"`
 						Name string `mapstructure:"name"`
 					} `mapstructure:"cluster"`
 					ActivityConnection struct {
 						Nodes []struct {
-							ID      string    `mapstructure:"id"`
-							Message string    `mapstructure:"message"`
+							ID      string `mapstructure:"id"`
+							Message string `mapstructure:"message"`
 							Time    string `mapstructure:"time"`
 						} `mapstructure:"nodes"`
 					} `mapstructure:"activityConnection"`
@@ -232,32 +232,54 @@ type PolarisEvents struct {
 }
 
 type PolarisEventsEdge struct {
+	Node struct {
+		ID                 int    `mapstructure:"id"`
+		Fid                string `mapstructure:"fid"`
+		ActivitySeriesID   string `mapstructure:"activitySeriesId"`
+		LastUpdated        string `mapstructure:"lastUpdated"`
+		LastActivityType   string `mapstructure:"lastActivityType"`
+		LastActivityStatus string `mapstructure:"lastActivityStatus"`
+		ObjectID           string `mapstructure:"objectId"`
+		ObjectName         string `mapstructure:"objectName"`
+		ObjectType         string `mapstructure:"objectType"`
+		Severity           string `mapstructure:"severity"`
+		Progress           string `mapstructure:"progress"`
+		Cluster            struct {
+			ID   string `mapstructure:"id"`
+			Name string `mapstructure:"name"`
+		} `mapstructure:"cluster"`
+		ActivityConnection struct {
+			Nodes []struct {
+				ID      string `mapstructure:"id"`
+				Message string `mapstructure:"message"`
+				Time    string `mapstructure:"time"`
+			} `mapstructure:"nodes"`
+		} `mapstructure:"activityConnection"`
+	} `mapstructure:"node"`
+}
 
-			
+type ClusterIdByName struct {
+	Data struct {
+		ClusterConnection struct {
+			Edges []struct {
 				Node struct {
-					ID                 int       `mapstructure:"id"`
-					Fid                string    `mapstructure:"fid"`
-					ActivitySeriesID   string    `mapstructure:"activitySeriesId"`
-					LastUpdated        string `mapstructure:"lastUpdated"`
-					LastActivityType   string    `mapstructure:"lastActivityType"`
-					LastActivityStatus string    `mapstructure:"lastActivityStatus"`
-					ObjectID           string    `mapstructure:"objectId"`
-					ObjectName         string    `mapstructure:"objectName"`
-					ObjectType         string    `mapstructure:"objectType"`
-					Severity           string    `mapstructure:"severity"`
-					Progress           string    `mapstructure:"progress"`
-					Cluster            struct {
-						ID   string `mapstructure:"id"`
-						Name string `mapstructure:"name"`
-					} `mapstructure:"cluster"`
-					ActivityConnection struct {
-						Nodes []struct {
-							ID      string    `mapstructure:"id"`
-							Message string    `mapstructure:"message"`
-							Time    string `mapstructure:"time"`
-						} `mapstructure:"nodes"`
-					} `mapstructure:"activityConnection"`
+					ID   string `mapstructure:"id"`
+					NAME string `mapstructure:"name"`
 				} `mapstructure:"node"`
-		
-		
+			} `mapstructure:"edges"`
+			PageInfo struct {
+				EndCursor   string `mapstructure:"endCursor"`
+				HasNextPage bool   `mapstructure:"hasNextPage"`
+			} `mapstructure:"pageInfo"`
+		} `mapstructure:"clusterConnection"`
+	} `mapstructure:"data"`
+}
+
+type EnableRadar struct {
+	Data struct {
+		EnableAutomaticFmdUpload struct {
+			ClusterID string `mapstructure:"clusterId"`
+			Enabled   bool   `mapstructure:"enabled"`
+		} `mapstructure:"enableAutomaticFmdUpload"`
+	} `mapstructure:"data"`
 }

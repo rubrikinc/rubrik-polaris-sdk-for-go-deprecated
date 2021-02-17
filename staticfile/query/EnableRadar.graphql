@@ -1,0 +1,6 @@
+mutation ToggleRadarPrefsMutation($clusterId: UUID!) {
+	enableAutomaticFmdUpload(clusterUuid: $clusterId, enabled: true) {
+		clusterId
+		enabled
+	}
+}

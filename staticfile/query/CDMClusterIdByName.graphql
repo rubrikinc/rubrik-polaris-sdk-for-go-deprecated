@@ -1,0 +1,14 @@
+query ClusterListFilterQuery($clusterNames: [String!], $after: String) {
+	clusterConnection(first: 20, filter: { name: $clusterNames }, after: $after) {
+		edges {
+			node {
+				id
+				name
+			}
+		}
+		pageInfo {
+			endCursor
+			hasNextPage
+		}
+	}
+}
