@@ -137,9 +137,9 @@ func (c *Credentials) commonAPI(callType string, config map[string]interface{}, 
 
 		var staticOperationName string
 		if config["query"] == nil {
-
 			staticOperationName = parseOperationName(config["mutation"].(string))
 		} else {
+
 			staticOperationName = parseOperationName(config["query"].(string))
 
 		}
@@ -160,8 +160,6 @@ func (c *Credentials) commonAPI(callType string, config map[string]interface{}, 
 		requestURL = fmt.Sprintf("https://%s.my.rubrik.com/api/session", c.PolarisDomain)
 
 	}
-
-	fmt.Println(config)
 
 	var request *http.Request
 
@@ -372,10 +370,13 @@ func stringEq(a []string, b []interface{}) bool {
 
 func parseOperationName(query string) string {
 	var splitQuery []string
-	if query == "query" {
+
+	if strings.Contains(query, "query") {
+
 		splitQuery = strings.Split(query, "query")
 
 	} else {
+
 		splitQuery = strings.Split(query, "mutation")
 
 	}
@@ -390,6 +391,7 @@ func parseOperationName(query string) string {
 	// }
 
 	splitOperationName := strings.Split(splitQuery[1], "(")
+
 	splitOperationName = strings.Split(splitOperationName[0], " {")
 
 	removeSpacing := strings.Replace(splitOperationName[0], " ", "", -1)
