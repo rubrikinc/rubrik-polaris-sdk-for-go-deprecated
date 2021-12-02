@@ -31,7 +31,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rubrikinc/rubrik-polaris-sdk-for-go/staticfile"
+	"github.com/rubrikinc/rubrik-polaris-sdk-for-go-deprecated/staticfile"
 )
 
 // Type and Constants are used for escaping Get requests
