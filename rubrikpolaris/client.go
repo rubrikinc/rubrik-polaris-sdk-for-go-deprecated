@@ -46,10 +46,13 @@ const (
 // Credentials contains the parameters used to authenticate against the Rubrik cluster and can be consumed
 // through ConnectEnv() or Connect().
 type Credentials struct {
-	PolarisDomain string
-	Username      string
-	Password      string
-	OperationName string
+	PolarisDomain  string
+	Username       string
+	Password       string
+	OperationName  string
+	ClientId       string
+	ClientSecret   string
+	AccessTokenUri string
 }
 
 var polarisAuthentication apiToken
@@ -118,6 +121,71 @@ func ConnectEnv() (*Credentials, error) {
 
 }
 
+func ConnectServiceAccount() (*Credentials, error) {
+
+	// UserAccount holds a Polaris local user account configuration.
+	type ServiceAccountFile struct {
+		// Polaris Client ID.
+		ClientId string `json:"client_id"`
+
+		// Polaris Client Secret.
+		ClientSecret string `json:"client_secret"`
+
+		// Name of the Service Account
+		Name string `json:"name"`
+
+		// Polaris account url.
+		AccessTokenUri string `json:"access_token_uri"`
+	}
+
+	var client *Credentials
+
+	home, err := os.UserHomeDir()
+
+	serviceAccountFile := fmt.Sprintf("%s/.rubrik/polaris-service-account.json", home)
+
+	buf, err := ioutil.ReadFile(serviceAccountFile)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to access '~/.rubrik/polaris-service-account.json' file: %v", err)
+	}
+
+	var accounts map[string]string
+	if err := json.Unmarshal(buf, &accounts); err != nil {
+		return nil, fmt.Errorf("Failed to read '~/.rubrik/polaris-service-account.json' file: %v", err)
+	}
+
+	var missingServiceAccount []string
+
+	if _, ok := accounts["access_token_uri"]; !ok {
+		missingServiceAccount = append(missingServiceAccount, "access_token_uri")
+	}
+
+	if _, ok := accounts["client_id"]; !ok {
+		missingServiceAccount = append(missingServiceAccount, "client_id")
+	}
+
+	if _, ok := accounts["client_secret"]; !ok {
+		missingServiceAccount = append(missingServiceAccount, "client_secret")
+	}
+
+	if len(missingServiceAccount) > 0 {
+		return nil, fmt.Errorf("Missing the following required fields in '~/.rubrik/polaris-service-account.json': %v", missingServiceAccount)
+	}
+
+	polarisDomainSplit := strings.Split(accounts["access_token_uri"], "//")[1]
+	polarisDomain := strings.Split(polarisDomainSplit, ".")[0]
+
+	client = &Credentials{
+		PolarisDomain:  polarisDomain,
+		ClientId:       accounts["client_id"],
+		ClientSecret:   accounts["client_secret"],
+		AccessTokenUri: accounts["access_token_uri"],
+	}
+
+	return client, nil
+
+}
+
 // Consolidate the base API functions.
 func (c *Credentials) commonAPI(callType string, config map[string]interface{}, timeout int) (interface{}, error) {
 
@@ -155,6 +223,9 @@ func (c *Credentials) commonAPI(callType string, config map[string]interface{}, 
 			config["query"] = strings.Replace(config["query"].(string), staticOperationName, config["operationName"].(string), 1)
 
 		}
+
+	} else if callType == "serviceAccount" {
+		requestURL = c.AccessTokenUri
 
 	} else {
 		requestURL = fmt.Sprintf("https://%s.my.rubrik.com/api/session", c.PolarisDomain)
@@ -312,9 +383,20 @@ func (c *Credentials) generateAPIToken(timeout ...int) (string, error) {
 	if polarisAuthentication.Token == "" || tokenHasExpired {
 
 		config := map[string]interface{}{}
-		config["username"] = c.Username
-		config["password"] = c.Password
-		apiRequest, err := c.commonAPI("apiToken", config, httpTimeout)
+
+		var callType string
+		if c.AccessTokenUri == "" {
+			config["username"] = c.Username
+			config["password"] = c.Password
+			callType = "apiToken"
+		} else {
+			config["grant_type"] = "client_credentials"
+			config["client_id"] = c.ClientId
+			config["client_secret"] = c.ClientSecret
+			callType = "serviceAccount"
+		}
+
+		apiRequest, err := c.commonAPI(callType, config, httpTimeout)
 		if err != nil {
 			return "", err
 		}
