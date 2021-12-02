@@ -1,4 +1,4 @@
-module github.com/rubrikinc/rubrik-polaris-sdk-for-go
+module github.com/rubrikinc/rubrik-polaris-sdk-for-go-deprecated
 
 go 1.14
 
