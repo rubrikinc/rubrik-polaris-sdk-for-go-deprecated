@@ -1,5 +1,5 @@
 query RadarEventsPerTimePeriod($timeAgo: DateTime) {
-	activitySeriesConnection(filters: { lastActivityType: Anomaly, startTime_gt: $timeAgo }) {
+	activitySeriesConnection(filters: { lastActivityType: Anomaly, startTimeGt: $timeAgo }) {
 		edges {
 			node {
 				id
