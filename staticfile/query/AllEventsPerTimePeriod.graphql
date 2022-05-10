@@ -1,5 +1,5 @@
 query AllEventsPerTimePeriod($timeAgo: DateTime) {
-	activitySeriesConnection(filters: { lastUpdated_gt: $timeAgo }) {
+	activitySeriesConnection(filters: { lastUpdatedGt: $timeAgo }) {
 		edges {
 			node {
 				id
