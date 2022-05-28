@@ -41,6 +41,7 @@ const (
 	encodePath encoding = 1 + iota
 	encodePathSegment
 	encodeQueryComponent
+	defaultServiceAccountFile = "~/.rubrik/polaris-service-account.json"
 )
 
 // Credentials contains the parameters used to authenticate against the Rubrik cluster and can be consumed
@@ -121,7 +122,14 @@ func ConnectEnv() (*Credentials, error) {
 
 }
 
-func ConnectServiceAccount() (*Credentials, error) {
+// ConnectServiceAccount is similar to Connect but retrieves secrets from
+// a service account JSON file. If args[0] is not given or if it is empty,
+// defaultServiceAccountFile is used instead.
+func ConnectServiceAccount(args ...string) (*Credentials, error) {
+	if len(args) > 1 {
+		return nil, errors.New(
+			"too many arguments given to ConnectServiceAccount")
+	}
 
 	// UserAccount holds a Polaris local user account configuration.
 	type ServiceAccountFile struct {
@@ -139,19 +147,27 @@ func ConnectServiceAccount() (*Credentials, error) {
 	}
 
 	var client *Credentials
+	var err error
 
-	home, err := os.UserHomeDir()
+	// Determine what service account file to use:
+	serviceAccountFile := GetStringFromSlice(args, 0, true,
+		defaultServiceAccountFile)
+	serviceAccountFile, err = ExpandTildePath(serviceAccountFile)
+	if err != nil {
+		return nil, err
+	}
 
-	serviceAccountFile := fmt.Sprintf("%s/.rubrik/polaris-service-account.json", home)
-
+	// Read service account file:
 	buf, err := ioutil.ReadFile(serviceAccountFile)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to access '~/.rubrik/polaris-service-account.json' file: %v", err)
+		return nil, fmt.Errorf("failed to access '%s' file: %v", err,
+			serviceAccountFile)
 	}
 
 	var accounts map[string]string
 	if err := json.Unmarshal(buf, &accounts); err != nil {
-		return nil, fmt.Errorf("Failed to read '~/.rubrik/polaris-service-account.json' file: %v", err)
+		return nil, fmt.Errorf("failed to read '%s' file: %v", err,
+			serviceAccountFile)
 	}
 
 	var missingServiceAccount []string
