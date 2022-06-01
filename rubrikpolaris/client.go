@@ -11,9 +11,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package rubrikcdm transforms the Rubrik API functionality into easy to consume functions. This eliminates the need to understand
-// how to consume raw Rubrik APIs with Go and extends upon one of Rubrik’s main design centers - simplicity. Rubrik’s API first architecture enables
-// organizations to embrace and integrate Rubrik functionality into their existing automation processes.
+// Package rubrikpolaris transforms the Rubrik API functionality into easy to
+// consume functions. This eliminates the need to understand how to consume
+// raw Rubrik APIs with Go and extends upon one of Rubrik’s main design
+// centers - simplicity. Rubrik’s API first architecture enables organizations
+// to embrace and integrate Rubrik functionality into their existing
+// automation processes.
 package rubrikpolaris
 
 import (
@@ -44,8 +47,12 @@ const (
 	defaultServiceAccountFile = "~/.rubrik/polaris-service-account.json"
 )
 
-// Credentials contains the parameters used to authenticate against the Rubrik cluster and can be consumed
-// through ConnectEnv() or Connect().
+// Credentials contains the parameters used to authenticate against the Rubrik
+// cluster and can be populated through the ConnectX() factory functions:
+// - Connect(),
+// - ConnectEnv(),
+// - ConnectServiceAccount() and
+// - ConnectServiceAccountFromString()
 type Credentials struct {
 	PolarisDomain  string
 	Username       string
@@ -63,15 +70,18 @@ type apiToken struct {
 	Created time.Time
 }
 
-// Connect initializes a new API client based on manually provided Rubrik cluster credentials. When possible,
-// the Rubrik credentials should not be stored as plain text in your .go file. ConnectEnv() can be used
-// as a safer alternative. The operationName is an optional value which can be used to add a custom prefix
-// to the GraphQL Operation Name which is useful for tracking specific usage in the Polaris logs.
+// Connect initializes a new API client based on manually provided Rubrik
+// cluster credentials. When possible, the Rubrik credentials should not be
+// stored as plain text in your .go file. ConnectEnv() can be used as a safer
+// alternative. The operationName is an optional value which can be used to add
+// a custom prefix to the GraphQL Operation Name which is useful for tracking
+// specific usage in the Polaris logs.
 func Connect(nodeIP, username, password string, operationName ...string) *Credentials {
 
 	operationNamePrefiex := "SdkGoLang"
 	if len(operationName) > 0 {
-		operationNamePrefiex = fmt.Sprintf("%s%s", operationNamePrefiex, operationName[0])
+		operationNamePrefiex = fmt.Sprintf("%s%s",
+			operationNamePrefiex, operationName[0])
 	}
 
 	client := &Credentials{
@@ -84,8 +94,8 @@ func Connect(nodeIP, username, password string, operationName ...string) *Creden
 	return client
 }
 
-// ConnectEnv is the preferred method to initialize a new API client by attempting to read the
-// following environment variables:
+// ConnectEnv is the preferred method to initialize a new API client by
+// attempting to read the following environment variables:
 //
 //  rubrik_polaris_domain
 //
@@ -93,23 +103,27 @@ func Connect(nodeIP, username, password string, operationName ...string) *Creden
 //
 //  rubrik_polaris_password
 //
-// rubrik_cdm_token will always take precedence over rubrik_polaris_username and rubrik_polaris_password
+// rubrik_cdm_token will always take precedence over rubrik_polaris_username
+// and rubrik_polaris_password
 func ConnectEnv() (*Credentials, error) {
 
 	polarisDomain, ok := os.LookupEnv("rubrik_polaris_domain")
 	if ok != true {
-		return nil, errors.New("The `rubrik_polaris_domain` environment variable is not present")
+		return nil, errors.New(
+			"the `rubrik_polaris_domain` environment variable is not present")
 	}
 
 	var client *Credentials
 
 	username, ok := os.LookupEnv("rubrik_polaris_username")
 	if ok != true {
-		return nil, errors.New("The `rubrik_polaris_username` or `rubrik_cdm_token` environment variable is not present")
+		return nil, errors.New("the `rubrik_polaris_username` or " +
+			"`rubrik_cdm_token` environment variable is not present")
 	}
 	password, ok := os.LookupEnv("rubrik_polaris_password")
 	if ok != true {
-		return nil, errors.New("The `rubrik_polaris_password` or `rubrik_cdm_token` environment variable is not present")
+		return nil, errors.New("the `rubrik_polaris_password` or " +
+			"`rubrik_cdm_token` environment variable is not present")
 	}
 
 	client = &Credentials{
@@ -119,7 +133,6 @@ func ConnectEnv() (*Credentials, error) {
 	}
 
 	return client, nil
-
 }
 
 // ConnectServiceAccount is similar to Connect but retrieves secrets from
@@ -146,7 +159,6 @@ func ConnectServiceAccount(args ...string) (*Credentials, error) {
 		AccessTokenUri string `json:"access_token_uri"`
 	}
 
-	var client *Credentials
 	var err error
 
 	// Determine what service account file to use:
@@ -158,40 +170,51 @@ func ConnectServiceAccount(args ...string) (*Credentials, error) {
 	}
 
 	// Read service account file:
-	buf, err := ioutil.ReadFile(serviceAccountFile)
+	var buf []byte
+	buf, err = ioutil.ReadFile(serviceAccountFile)
 	if err != nil {
-		return nil, fmt.Errorf("failed to access '%s' file: %v", err,
+		return nil, fmt.Errorf(
+			"failed to access '%s' file: %v", err,
 			serviceAccountFile)
 	}
 
+	return ConnectServiceAccountFromString(buf)
+}
+
+// ConnectServiceAccountFromString is similar to ConnectServiceAccount
+// but takes the JSON string as parameter instead of the JSON file path.
+func ConnectServiceAccountFromString(jsonString []byte) (*Credentials, error) {
 	var accounts map[string]string
-	if err := json.Unmarshal(buf, &accounts); err != nil {
-		return nil, fmt.Errorf("failed to read '%s' file: %v", err,
-			serviceAccountFile)
+	if err := json.Unmarshal(jsonString, &accounts); err != nil {
+		return nil, fmt.Errorf("invalid JSON string: %v", err)
 	}
 
 	var missingServiceAccount []string
 
 	if _, ok := accounts["access_token_uri"]; !ok {
-		missingServiceAccount = append(missingServiceAccount, "access_token_uri")
+		missingServiceAccount = append(missingServiceAccount,
+			"access_token_uri")
 	}
 
 	if _, ok := accounts["client_id"]; !ok {
-		missingServiceAccount = append(missingServiceAccount, "client_id")
+		missingServiceAccount = append(missingServiceAccount,
+			"client_id")
 	}
 
 	if _, ok := accounts["client_secret"]; !ok {
-		missingServiceAccount = append(missingServiceAccount, "client_secret")
+		missingServiceAccount = append(missingServiceAccount,
+			"client_secret")
 	}
 
 	if len(missingServiceAccount) > 0 {
-		return nil, fmt.Errorf("Missing the following required fields in '~/.rubrik/polaris-service-account.json': %v", missingServiceAccount)
+		return nil, fmt.Errorf("missing JSON fields: %v",
+			missingServiceAccount)
 	}
 
 	polarisDomainSplit := strings.Split(accounts["access_token_uri"], "//")[1]
 	polarisDomain := strings.Split(polarisDomainSplit, ".")[0]
 
-	client = &Credentials{
+	client := &Credentials{
 		PolarisDomain:  polarisDomain,
 		ClientId:       accounts["client_id"],
 		ClientSecret:   accounts["client_secret"],
@@ -199,11 +222,13 @@ func ConnectServiceAccount(args ...string) (*Credentials, error) {
 	}
 
 	return client, nil
-
 }
 
 // Consolidate the base API functions.
-func (c *Credentials) commonAPI(callType string, config map[string]interface{}, timeout int) (interface{}, error) {
+func (c *Credentials) commonAPI(
+	callType string,
+	config map[string]interface{},
+	timeout int) (interface{}, error) {
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -216,7 +241,8 @@ func (c *Credentials) commonAPI(callType string, config map[string]interface{}, 
 	var requestURL string
 	if callType == "graphql" {
 
-		requestURL = fmt.Sprintf("https://%s.my.rubrik.com/api/graphql", c.PolarisDomain)
+		requestURL = fmt.Sprintf("https://%s.my.rubrik.com/api/graphql",
+			c.PolarisDomain)
 		// Parse the Operation Name of the static GraphQL query
 
 		var staticOperationName string
@@ -230,13 +256,16 @@ func (c *Credentials) commonAPI(callType string, config map[string]interface{}, 
 
 		// Combine the predefined Operation Name with the Operation Name defined
 		// in the static GQL query
-		config["operationName"] = fmt.Sprintf("%s%s", c.OperationName, staticOperationName)
+		config["operationName"] = fmt.Sprintf("%s%s",
+			c.OperationName, staticOperationName)
 		// Replace the Operation Name in the static GQL query with the new custom
 		// name
 		if config["query"] == nil {
-			config["query"] = strings.Replace(config["mutation"].(string), staticOperationName, config["operationName"].(string), 1)
+			config["query"] = strings.Replace(config["mutation"].(string),
+				staticOperationName, config["operationName"].(string), 1)
 		} else {
-			config["query"] = strings.Replace(config["query"].(string), staticOperationName, config["operationName"].(string), 1)
+			config["query"] = strings.Replace(config["query"].(string),
+				staticOperationName, config["operationName"].(string), 1)
 
 		}
 
@@ -244,7 +273,8 @@ func (c *Credentials) commonAPI(callType string, config map[string]interface{}, 
 		requestURL = c.AccessTokenUri
 
 	} else {
-		requestURL = fmt.Sprintf("https://%s.my.rubrik.com/api/session", c.PolarisDomain)
+		requestURL = fmt.Sprintf("https://%s.my.rubrik.com/api/session",
+			c.PolarisDomain)
 
 	}
 
@@ -252,22 +282,27 @@ func (c *Credentials) commonAPI(callType string, config map[string]interface{}, 
 
 	convertedConfig, _ := json.Marshal(config)
 
-	request, _ = http.NewRequest("POST", requestURL, bytes.NewBuffer(convertedConfig))
+	request, _ = http.NewRequest("POST", requestURL,
+		bytes.NewBuffer(convertedConfig))
 
 	if callType == "graphql" {
-		request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", polarisAuthentication.Token))
+		request.Header.Add("Authorization",
+			fmt.Sprintf("Bearer %s", polarisAuthentication.Token))
 
 	} else {
 		request.SetBasicAuth(c.Username, c.Password)
 
 	}
 
-	request.Header.Set("Content-Type", "application/json;charset=UTF-8")
-	request.Header.Set("Accept", "application/json")
+	request.Header.Set("Content-Type",
+		"application/json;charset=UTF-8")
+	request.Header.Set("Accept",
+		"application/json")
 
 	apiRequest, err := client.Do(request)
 	if err, ok := err.(net.Error); ok && err.Timeout() {
-		return nil, errors.New("Unable to establish a connection to the Rubrik cluster")
+		return nil, errors.New(
+			"unable to establish a connection to the Rubrik cluster")
 	} else if err != nil {
 		return nil, err
 	}
@@ -284,7 +319,8 @@ func (c *Credentials) commonAPI(callType string, config map[string]interface{}, 
 		// DELETE request will return a 204 No Content status
 		if apiRequest.StatusCode == 204 {
 			convertedAPIResponse = map[string]interface{}{}
-			convertedAPIResponse.(map[string]interface{})["statusCode"] = apiRequest.StatusCode
+			convertedAPIResponse.(map[string]interface{})["statusCode"] =
+				apiRequest.StatusCode
 		} else if apiRequest.StatusCode != 200 {
 			return nil, fmt.Errorf("%s", apiRequest.Status)
 		}
@@ -297,7 +333,8 @@ func (c *Credentials) commonAPI(callType string, config map[string]interface{}, 
 
 	if _, ok := convertedAPIResponse.(map[string]interface{})["errorType"]; ok {
 
-		return nil, fmt.Errorf("%s", convertedAPIResponse.(map[string]interface{})["message"])
+		return nil, fmt.Errorf("%s",
+			convertedAPIResponse.(map[string]interface{})["message"])
 	}
 
 	if _, ok := convertedAPIResponse.(map[string]interface{})["message"]; ok {
@@ -307,24 +344,28 @@ func (c *Credentials) commonAPI(callType string, config map[string]interface{}, 
 
 		}
 
-		return nil, fmt.Errorf("%s", convertedAPIResponse.(map[string]interface{})["message"])
+		return nil, fmt.Errorf("%s",
+			convertedAPIResponse.(map[string]interface{})["message"])
 	}
 
 	return convertedAPIResponse, nil
 
 }
 
-// httpTimeout returns a default timeout value of 15 or use the value provided by the end user
+// httpTimeout returns a default timeout value of 15 or use the value
+// provided by the end user
 func httpTimeout(timeout []int) int {
 	if len(timeout) == 0 {
 		return int(15) // if not timeout value is provided, set the default to 15
 	}
-	return int(timeout[0]) // set the timeout value to the first value in the timeout slice
+	return int(timeout[0]) // set timeout value to 1st value in the timeout slice
 
 }
 
-// Post sends a POST request to the provided Rubrik API endpoint and returns the full API response. Supported "apiVersions" are v1, v2, and internal.
-// The optional timeout value corresponds to the number of seconds to wait to establish a connection to the Rubrik cluster before returning a
+// Query sends a POST request to the provided Rubrik API endpoint and returns
+// the full API response. Supported "apiVersions" are v1, v2, and internal.
+// The optional timeout value corresponds to the number of seconds to wait
+// to establish a connection to the Rubrik cluster before returning a
 // timeout error. If no value is provided, a default of 15 seconds will be used.
 func (c *Credentials) Query(query string, timeout ...int) (interface{}, error) {
 
@@ -344,7 +385,10 @@ func (c *Credentials) Query(query string, timeout ...int) (interface{}, error) {
 
 }
 
-func (c *Credentials) QueryWithVariables(query string, variables map[string]interface{}, timeout ...int) (interface{}, error) {
+func (c *Credentials) QueryWithVariables(
+	query string,
+	variables map[string]interface{},
+	timeout ...int) (interface{}, error) {
 
 	httpTimeout := httpTimeout(timeout)
 
@@ -363,7 +407,10 @@ func (c *Credentials) QueryWithVariables(query string, variables map[string]inte
 
 }
 
-func (c *Credentials) MutationWithVariables(query string, variables map[string]interface{}, timeout ...int) (interface{}, error) {
+func (c *Credentials) MutationWithVariables(
+	query string,
+	variables map[string]interface{},
+	timeout ...int) (interface{}, error) {
 
 	httpTimeout := httpTimeout(timeout)
 
@@ -430,13 +477,15 @@ func (c *Credentials) generateAPIToken(timeout ...int) (string, error) {
 
 func (c *Credentials) readQueryFile(filePath string, timeout ...int) string {
 
-	// set up a new box by giving it a name and an optional (relative) path to a folder on disk:
+	// set up a new box by giving it a name and an optional (relative)
+	// path to a folder on disk:
 	file := string(staticfile.Get(fmt.Sprintf("query/%s", filePath)))
 	return file
 
 }
 
-// stringEq converts b to []string, sorts the two []string, and checks for equality
+// stringEq converts b to []string, sorts the two []string,
+// and checks for equality
 func stringEq(a []string, b []interface{}) bool {
 
 	// Convert []interface {} to []string
