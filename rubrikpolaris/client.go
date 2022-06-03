@@ -44,17 +44,18 @@ const (
 	encodePath encoding = 1 + iota
 	encodePathSegment
 	encodeQueryComponent
-	defaultServiceAccountFile = "~/.rubrik/polaris-service-account.json"
+	DefaultServiceAccountFile = "~/.rubrik/polaris-service-account.json"
 )
 
 // Credentials contains the parameters used to authenticate against the Rubrik
 // cluster and can be populated through the ConnectX() factory functions:
 // - Connect(),
 // - ConnectEnv(),
-// - ConnectServiceAccount() and
+// - ConnectServiceAccountFromFile() and
 // - ConnectServiceAccountFromString()
 type Credentials struct {
 	PolarisDomain  string
+	Host           string
 	Username       string
 	Password       string
 	OperationName  string
@@ -76,21 +77,17 @@ type apiToken struct {
 // alternative. The operationName is an optional value which can be used to add
 // a custom prefix to the GraphQL Operation Name which is useful for tracking
 // specific usage in the Polaris logs.
-func Connect(nodeIP, username, password string, operationName ...string) *Credentials {
-
-	operationNamePrefiex := "SdkGoLang"
-	if len(operationName) > 0 {
-		operationNamePrefiex = fmt.Sprintf("%s%s",
-			operationNamePrefiex, operationName[0])
-	}
+func Connect(
+	nodeIP, username, password string,
+	operationName ...string) *Credentials {
 
 	client := &Credentials{
 		PolarisDomain: nodeIP,
+		Host:          fmt.Sprintf("%s.my.rubrik.com", nodeIP),
 		Username:      username,
 		Password:      password,
-		OperationName: operationNamePrefiex,
+		OperationName: OperationNamePrefix(operationName...),
 	}
-
 	return client
 }
 
@@ -105,7 +102,8 @@ func Connect(nodeIP, username, password string, operationName ...string) *Creden
 //
 // rubrik_cdm_token will always take precedence over rubrik_polaris_username
 // and rubrik_polaris_password
-func ConnectEnv() (*Credentials, error) {
+func ConnectEnv(
+	operationName ...string) (*Credentials, error) {
 
 	polarisDomain, ok := os.LookupEnv("rubrik_polaris_domain")
 	if ok != true {
@@ -128,21 +126,41 @@ func ConnectEnv() (*Credentials, error) {
 
 	client = &Credentials{
 		PolarisDomain: polarisDomain,
+		Host:          fmt.Sprintf("%s.my.rubrik.com", polarisDomain),
 		Username:      username,
 		Password:      password,
+		OperationName: OperationNamePrefix(operationName...),
 	}
 
 	return client, nil
 }
 
-// ConnectServiceAccount is similar to Connect but retrieves secrets from
-// a service account JSON file. If args[0] is not given or if it is empty,
-// defaultServiceAccountFile is used instead.
-func ConnectServiceAccount(args ...string) (*Credentials, error) {
+// ConnectServiceAccount is deprecated. It is equivalent to:
+// ConnectServiceAccountFromFile(DefaultServiceAccountFile)
+//
+// Use ConnectServiceAccountFromFile or ConnectServiceAccountFromString instead.
+// @deprecated
+func ConnectServiceAccount(
+	args ...string) (*Credentials, error) {
 	if len(args) > 1 {
 		return nil, errors.New(
 			"too many arguments given to ConnectServiceAccount")
 	}
+	serviceAccountFile := GetStringFromSlice(args, 0, true,
+		DefaultServiceAccountFile)
+	return ConnectServiceAccountFromFile(serviceAccountFile, "")
+}
+
+// ConnectServiceAccountFromFile is similar to Connect but retrieves secrets
+// from a service account JSON file.
+//
+// Example: use the default service account file:
+//
+//   creds,err := ConnectServiceAccountFromFile(DefaultServiceAccountFile)
+//
+func ConnectServiceAccountFromFile(
+	serviceAccountFile string,
+	operationName ...string) (*Credentials, error) {
 
 	// UserAccount holds a Polaris local user account configuration.
 	type ServiceAccountFile struct {
@@ -161,9 +179,7 @@ func ConnectServiceAccount(args ...string) (*Credentials, error) {
 
 	var err error
 
-	// Determine what service account file to use:
-	serviceAccountFile := GetStringFromSlice(args, 0, true,
-		defaultServiceAccountFile)
+	// Resolve service account file path if needed:
 	serviceAccountFile, err = ExpandTildePath(serviceAccountFile)
 	if err != nil {
 		return nil, err
@@ -178,14 +194,16 @@ func ConnectServiceAccount(args ...string) (*Credentials, error) {
 			serviceAccountFile)
 	}
 
-	return ConnectServiceAccountFromString(buf)
+	return ConnectServiceAccountFromString(string(buf), operationName...)
 }
 
-// ConnectServiceAccountFromString is similar to ConnectServiceAccount
+// ConnectServiceAccountFromString is similar to ConnectServiceAccountFromFile
 // but takes the JSON string as parameter instead of the JSON file path.
-func ConnectServiceAccountFromString(jsonString []byte) (*Credentials, error) {
+func ConnectServiceAccountFromString(
+	jsonString string,
+	operationName ...string) (*Credentials, error) {
 	var accounts map[string]string
-	if err := json.Unmarshal(jsonString, &accounts); err != nil {
+	if err := json.Unmarshal([]byte(jsonString), &accounts); err != nil {
 		return nil, fmt.Errorf("invalid JSON string: %v", err)
 	}
 
@@ -211,14 +229,16 @@ func ConnectServiceAccountFromString(jsonString []byte) (*Credentials, error) {
 			missingServiceAccount)
 	}
 
-	polarisDomainSplit := strings.Split(accounts["access_token_uri"], "//")[1]
-	polarisDomain := strings.Split(polarisDomainSplit, ".")[0]
+	hostSplit := strings.Split(accounts["access_token_uri"], "//")[1]
+	host := strings.Split(hostSplit, "/")[0]
 
 	client := &Credentials{
-		PolarisDomain:  polarisDomain,
+		PolarisDomain:  strings.Split(host, ".")[0],
+		Host:           host,
 		ClientId:       accounts["client_id"],
 		ClientSecret:   accounts["client_secret"],
 		AccessTokenUri: accounts["access_token_uri"],
+		OperationName:  OperationNamePrefix(operationName...),
 	}
 
 	return client, nil
@@ -239,42 +259,36 @@ func (c *Credentials) commonAPI(
 	}
 
 	var requestURL string
-	if callType == "graphql" {
+	switch callType {
 
-		requestURL = fmt.Sprintf("https://%s.my.rubrik.com/api/graphql",
-			c.PolarisDomain)
+	case "serviceAccount":
+		requestURL = c.AccessTokenUri
+
+	case "graphql":
+		requestURL = fmt.Sprintf("https://%s/api/graphql", c.Host)
 		// Parse the Operation Name of the static GraphQL query
 
 		var staticOperationName string
 		if config["query"] == nil {
 			staticOperationName = parseOperationName(config["mutation"].(string))
 		} else {
-
 			staticOperationName = parseOperationName(config["query"].(string))
-
 		}
 
-		// Combine the predefined Operation Name with the Operation Name defined
+		// Combine the Operation Name prefix with the Operation Name defined
 		// in the static GQL query
-		config["operationName"] = fmt.Sprintf("%s%s",
-			c.OperationName, staticOperationName)
-		// Replace the Operation Name in the static GQL query with the new custom
-		// name
+		config["operationName"] = c.OperationName + staticOperationName
+		// Replace Operation Name in the static GQL query with new custom name
 		if config["query"] == nil {
 			config["query"] = strings.Replace(config["mutation"].(string),
 				staticOperationName, config["operationName"].(string), 1)
 		} else {
 			config["query"] = strings.Replace(config["query"].(string),
 				staticOperationName, config["operationName"].(string), 1)
-
 		}
 
-	} else if callType == "serviceAccount" {
-		requestURL = c.AccessTokenUri
-
-	} else {
-		requestURL = fmt.Sprintf("https://%s.my.rubrik.com/api/session",
-			c.PolarisDomain)
+	default:
+		requestURL = fmt.Sprintf("https://%s/api/session", c.Host)
 
 	}
 
