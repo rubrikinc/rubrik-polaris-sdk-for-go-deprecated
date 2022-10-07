@@ -1,5 +1,5 @@
 query RadarTotalEventsPerTimePeriod($timeAgo: DateTime) {
-	activitySeriesConnection(filters: { lastActivityType: Anomaly, startTimeGt: $timeAgo }) {
+	activitySeriesConnection(filters: { lastActivityType: [ANOMALY], startTimeGt: $timeAgo }) {
 		count
 	}
 }
