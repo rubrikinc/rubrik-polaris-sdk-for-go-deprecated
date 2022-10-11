@@ -1,5 +1,5 @@
 query AllAuditLogPerTimePeriod($timeAgo: DateTime) {
-	userAuditConnection(filters: { time_gt: $timeAgo }) {
+	userAuditConnection(filters: { timeGt: $timeAgo }) {
 		edges {
 			node {
 				id

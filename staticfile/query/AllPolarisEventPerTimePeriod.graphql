@@ -1,9 +1,9 @@
 query AllPolarisEventPerTimePeriod($timeAgo: DateTime, $after: String) {
 	activitySeriesConnection(
 		filters: {
-			cluster: { id: ["00000000-0000-0000-0000-000000000000"] }
+			clusterId: ["00000000-0000-0000-0000-000000000000"]
 			startTimeGt: $timeAgo
-			lastUpdatedGt: $timeAgo
+			lastUpdatedTimeGt: $timeAgo
 		}
 		first: 20
 		after: $after
