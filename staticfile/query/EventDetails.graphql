@@ -1,5 +1,5 @@
 query EventDetails($activitySeriesId: UUID!, $clusterUuid: UUID!) {
-	activitySeries(activitySeriesId: $activitySeriesId, clusterUuid: $clusterUuid) {
+	activitySeries(input: {activitySeriesId: $activitySeriesId, clusterUuid: $clusterUuid}) {
 		activityConnection {
 			nodes {
 				message
