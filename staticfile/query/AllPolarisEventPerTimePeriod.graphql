@@ -1,47 +1,47 @@
-query AllPolarisEventPerTimePeriod($timeAgo: DateTime, $after: String) {
-	activitySeriesConnection(
-		filters: {
-			clusterId: ["00000000-0000-0000-0000-000000000000"]
-			startTimeGt: $timeAgo
-			lastUpdatedTimeGt: $timeAgo
-		}
-		first: 20
-		after: $after
-	) {
-		edges {
-			node {
-				id
-				fid
-				activitySeriesId
-				lastUpdated
-				lastActivityType
-				lastActivityStatus
-				objectId
-				objectName
-				objectType
-				severity
-				progress
-				cluster {
-					id
-					name
-				}
-				cluster {
-					id
-					name
-				}
-				activityConnection {
-					nodes {
-						id
-						message
-						time
-					}
-				}
-			}
-		}
-		pageInfo {
-			endCursor
-			hasNextPage
-			hasPreviousPage
-		}
-	}
+query AllPolarisEventPerTimePeriod(
+  $timeAgo: DateTime
+  $clusterId: String
+  $after: String
+) {
+  activitySeriesConnection(
+    filters: { clusterId: [$clusterId], lastUpdatedTimeGt: $timeAgo }
+    first: 20
+    after: $after
+  ) {
+    edges {
+      node {
+        id
+        fid
+        activitySeriesId
+        lastUpdated
+        lastActivityType
+        lastActivityStatus
+        objectId
+        objectName
+        objectType
+        severity
+        progress
+        cluster {
+          id
+          name
+        }
+        cluster {
+          id
+          name
+        }
+        activityConnection {
+          nodes {
+            id
+            message
+            time
+          }
+        }
+      }
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
+      hasPreviousPage
+    }
+  }
 }

@@ -11,7 +11,7 @@ func (c *Credentials) GetAllEvents(secondsTimeRange int, timeout ...int) (*AllEv
 	httpTimeout := httpTimeout(timeout)
 
 	query := c.readQueryFile("AllEventsPerTimePeriod.graphql")
-	
+
 	variables := map[string]interface{}{}
 	variables["timeAgo"] = time.Now().Add(time.Duration(secondsTimeRange*-1) * time.Second).UTC().Format(time.RFC3339)
 
@@ -35,7 +35,6 @@ func (c *Credentials) GetAllAuditLog(timeAgo string, timeout ...int) (*AllAuditL
 	httpTimeout := httpTimeout(timeout)
 
 	query := c.readQueryFile("AllAuditLogPerTimePeriod.graphql")
-	
 
 	variables := map[string]interface{}{}
 	variables["timeAgo"] = timeAgo
@@ -61,7 +60,6 @@ func (c *Credentials) GetEventDetails(activitySeriesID, clusterUUID string, time
 
 	query := c.readQueryFile("EventDetails.graphql")
 
-
 	variables := map[string]interface{}{}
 	variables["activitySeriesId"] = activitySeriesID
 	variables["clusterUuid"] = clusterUUID
@@ -82,6 +80,10 @@ func (c *Credentials) GetEventDetails(activitySeriesID, clusterUUID string, time
 }
 
 func (c *Credentials) GetAllPolarisEvents(timeAgo string, timeout ...int) (*PolarisEvents, error) {
+	return c.GetAllRscEventsForCluster(timeAgo, "00000000-0000-0000-0000-000000000000", timeout...)
+}
+
+func (c *Credentials) GetAllRscEventsForCluster(timeAgo string, clusterId string, timeout ...int) (*PolarisEvents, error) {
 
 	httpTimeout := httpTimeout(timeout)
 
@@ -89,12 +91,11 @@ func (c *Credentials) GetAllPolarisEvents(timeAgo string, timeout ...int) (*Pola
 		httpTimeout = 300
 	}
 
-
 	query := c.readQueryFile("AllPolarisEventPerTimePeriod.graphql")
-
 
 	variables := map[string]interface{}{}
 	variables["timeAgo"] = timeAgo
+	variables["clusterId"] = clusterId
 
 	eventDetail, err := c.QueryWithVariables(query, variables, httpTimeout)
 	if err != nil {
@@ -108,7 +109,6 @@ func (c *Credentials) GetAllPolarisEvents(timeAgo string, timeout ...int) (*Pola
 		return nil, mapErr
 	}
 
-
 	var additionalData []PolarisEventsEdge
 	if apiResponse.Data.ActivitySeriesConnection.PageInfo.HasNextPage == true {
 
@@ -120,15 +120,15 @@ func (c *Credentials) GetAllPolarisEvents(timeAgo string, timeout ...int) (*Pola
 			if err != nil {
 				return nil, err
 			}
-	
+
 			// Convert the API Response (map[string]interface{}) to a struct
 			var apiResponsePagination PolarisEvents
 			mapErr := mapstructure.Decode(eventDetailPagination, &apiResponsePagination)
 			if mapErr != nil {
 				return nil, mapErr
 			}
-			
-			for _, data := range  apiResponsePagination.Data.ActivitySeriesConnection.Edges {
+
+			for _, data := range apiResponsePagination.Data.ActivitySeriesConnection.Edges {
 				additionalData = append(additionalData, data)
 			}
 
@@ -140,13 +140,11 @@ func (c *Credentials) GetAllPolarisEvents(timeAgo string, timeout ...int) (*Pola
 
 		}
 
-		for _, data := range additionalData{
+		for _, data := range additionalData {
 			apiResponse.Data.ActivitySeriesConnection.Edges = append(apiResponse.Data.ActivitySeriesConnection.Edges, data)
 		}
-		
+
 	}
 	return &apiResponse, nil
 
 }
-
-	
