@@ -1,6 +1,7 @@
 query RadarEventsPerTimePeriod($timeAgo: DateTime) {
   activitySeriesConnection(
     filters: { lastActivityType: [ANOMALY], lastUpdatedTimeGt: $timeAgo }
+    first: 1000
   ) {
     edges {
       node {
@@ -19,7 +20,7 @@ query RadarEventsPerTimePeriod($timeAgo: DateTime) {
           id
           name
         }
-        activityConnection {
+        activityConnection (first: 20) {
           nodes {
             id
             message

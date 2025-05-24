@@ -6,6 +6,12 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+const (
+	// successiveEventQueryWaitPeriod is the time period in seconds to wait before
+	// making the activitySeriesConnection query again
+	successiveEventQueryWaitPeriod = 30
+)
+
 func (c *Credentials) GetAllEvents(secondsTimeRange int, timeout ...int) (*AllEvents, error) {
 
 	httpTimeout := httpTimeout(timeout)
@@ -137,6 +143,9 @@ func (c *Credentials) GetAllRscEventsForCluster(timeAgo string, clusterId string
 			}
 
 			variables["after"] = apiResponsePagination.Data.ActivitySeriesConnection.PageInfo.EndCursor
+
+			// Add some sleep before successive activitySeriesConnection queries to ease load on the database
+			time.Sleep(time.Duration(successiveEventQueryWaitPeriod) * time.Second)
 
 		}
 
