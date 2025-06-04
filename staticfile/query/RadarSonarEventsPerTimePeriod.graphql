@@ -22,7 +22,7 @@ query RadarSonarEventsPerTimePeriod($timeAgo: DateTime) {
           id
           name
         }
-        activityConnection {
+        activityConnection (first: 20) {
           nodes {
             id
             message

@@ -5,7 +5,7 @@ query AllPolarisEventPerTimePeriod(
 ) {
   activitySeriesConnection(
     filters: { clusterId: [$clusterId], lastUpdatedTimeGt: $timeAgo }
-    first: 20
+    first: 1000
     after: $after
   ) {
     edges {
@@ -29,7 +29,7 @@ query AllPolarisEventPerTimePeriod(
           id
           name
         }
-        activityConnection {
+        activityConnection (first: 20) {
           nodes {
             id
             message
