@@ -1,17 +1,7 @@
-# Change Log
+# Changelog
 
-All notable changes to this project will be documented in this file.
+## v1.0.16 (2025-06-10)
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/)
-and this project adheres to [Semantic Versioning](http://semver.org/).
-
-## Types of changes
-
-- **Added** for new features.
-- **Changed** for changes in existing functionality.
-- **Deprecated** for soon-to-be removed features.
-- **Removed** for now removed features.
-- **Fixed** for any bug fixes.
-- **Security** in case of vulnerabilities.
-
-## v1.0.0
+- Add limits to activity and series connection wherever missing.
+- Remove radar events query which is not used anywhere
+- Add sleep between consecutive activitySeriesConnection calls
