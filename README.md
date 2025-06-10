@@ -7,7 +7,7 @@
 
 # ** BETA ** 
 
-This SDK is currently not public facing. It's main use is in the Splunk Polaris integration, and the rbk-log application.
+This SDK is currently not public facing. Its main use is in the Splunk Polaris integration, and the rbk-log application.
 
 # :hammer: Installation
 
